@@ -26,33 +26,31 @@
 </div>
 
 <!-- TABLE OF CONTENTS -->
+
 <details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#description">Description</a></li>
-    <li><a href="#how-is-a-contribution-made">How to contribute</a></li>
-    <li><a href="#requirements">Requirements</a></li>
-    <li>
-      <a href="#how-to-use-data-quality-tools">Using my-portfolio</a>
-      <ul>
-        <li><a href="#example-of-usage">Example</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#documentation">Documentation</a>
-      <ul>
-	<details>
-          <summary>index</summary>
-          <li><a href="#overview">Overview</a></li>
-          <li><a href="#menu-json-structure">JSON Structure</a>
-            <ul>
-            </ul>
-          </li>
-	</details>
-      </ul>
-    </li>
-  </ol>
+<summary>Table of Contents</summary>
+
+- [Description](#description)
+- [How to contribute](#how-is-a-contribution-made)
+- [Requirements](#requirements)
+- [Using Data Quality Tools](#how-to-use-data-quality-tools)
+   - [Example](#example-of-usage)
+- [Invoke Usage](#invoke-usage)
+   - [Clean](#clean)
+      - [Opriont](#options)
+   - [Test](#test)
+      - [Options](#options-1)
+      - [Examples](#examples)
+   - [Setup Virtual Environment](#setup-virtual-environment)
+- [Documentation](#documentation)
+    <details>
+
+    - [Overview](#overview)
+    - [JSON Structure](#menu-json-structure)
+
+    </details>
 </details>
+
 
 
 
@@ -138,6 +136,40 @@ git pull origin <master-branch-name>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Invoke Usage
+
+### Clean
+Clean up build artifacts and temporary files.
+```
+invoke clean 
+```
+#### Options:
+- `--venv`: Clean up the virtual environment venv (default: false)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Test
+Run tests for the project.
+```
+invoke test [--target=<test_target>]
+```
+#### Options:
+- `--target`: The specific test or test directory to run. (default: None, runs all tests)
+
+#### Examples:
+```
+invoke test --target=tests/test_module.py
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Setup Virtual Environment
+Create a virtual environment and install dependencies.
+```
+invoke setupVenv
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 # Documentation
