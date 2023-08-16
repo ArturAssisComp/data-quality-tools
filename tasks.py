@@ -63,5 +63,10 @@ def installDev(c):
     c.run("pip install -e .")
 
 @task
+def install(c):
+    """Install the package."""
+    c.run("pip install .")
+
+@task
 def uninstall(c):
     c.run("pip uninstall data_quality_tools")
