@@ -1,14 +1,14 @@
 
-from manager.models.user_manager_output_interface import OutputInterface 
+from manager.models.user_response import UserResponse 
 
 
 
 # implement using pytest
-class TestOutputInterface:
+class TestUserResponse:
     def test_output_interface(self):
         data_quality_snapshot = '{"test": "test"}'
         data_quality_summary_report = '{"summary": "test"}'
-        output_interface = OutputInterface(
+        output_interface = UserResponse(
             id=1,
             name="test",
             description="test",

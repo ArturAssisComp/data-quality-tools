@@ -1,7 +1,7 @@
 from typing import Any
 from pydantic import BaseModel, Json
 
-class OutputInterface(BaseModel):
+class UserResponse(BaseModel):
     id: int
     name: str = ''
     description: str = ''

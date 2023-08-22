@@ -5,7 +5,7 @@ class Documentation (BaseModel):
     name: str = 'doc'
     rules: dict[str, str] = dict()
 
-class InputInterface (BaseModel):
+class UserRequest (BaseModel):
     id: int
     name: str = ''
     description: str = ''

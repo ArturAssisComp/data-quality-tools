@@ -1,11 +1,11 @@
-from manager.models.user_manager_input_interface import InputInterface, Documentation
+from manager.models.user_request import UserRequest, Documentation
 
 
 
 # implement using pytest
-class TestInputInterface:
+class TestUserRequest:
     def test_input_interface(self):
-        input_interface = InputInterface(
+        input_interface = UserRequest(
             id=1,
             name="test",
             description="test",
