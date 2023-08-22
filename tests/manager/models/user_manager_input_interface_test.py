@@ -1,4 +1,4 @@
-from src.manager.models.input_interface import InputInterface, Documentation
+from manager.models.user_manager_input_interface import InputInterface, Documentation
 
 
 

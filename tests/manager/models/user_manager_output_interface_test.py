@@ -1,5 +1,5 @@
 
-from src.manager.models.output_interface import OutputInterface 
+from manager.models.user_manager_output_interface import OutputInterface 
 
 
 
