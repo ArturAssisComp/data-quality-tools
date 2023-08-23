@@ -1,9 +1,6 @@
 from pydantic import BaseModel
+from .documentation import Documentation
 
-class Documentation (BaseModel):
-    id: int
-    name: str = 'doc'
-    rules: dict[str, str] = dict()
 
 class UserRequest (BaseModel):
     id: int
