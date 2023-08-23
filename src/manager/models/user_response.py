@@ -1,9 +1,4 @@
-from typing import Any
-from pydantic import BaseModel, Json
+from src.manager.models.manager_response import ManagerResponse
 
-class UserResponse(BaseModel):
-    id: int
-    name: str = ''
-    description: str = ''
-    data_quality_snapshot: Json[Any] 
-    data_quality_summary_report: Json[Any]
+class UserResponse (ManagerResponse):
+    pass
