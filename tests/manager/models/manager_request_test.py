@@ -1,7 +1,12 @@
+from unittest.mock import patch
 import pytest
 from src.manager.models.user_request import UserRequest
 from src.manager.models.manager_request import ManagerRequest
 from src.manager.models.documentation import Documentation
+from tests.utils.mocks import get_mock_manager_arguments
+
+
+
 
 
 
@@ -14,6 +19,7 @@ class TestManagerRequest():
             name='test',
             description="test",
             dataset=['file1', 'file2'],
+            manager_arguments=get_mock_manager_arguments(),
             documentation=Documentation(id=23),
             tools_arguments={'tool1': ['arg1', 'arg2'], 'tool2': []},
         ),
@@ -24,6 +30,7 @@ class TestManagerRequest():
             name='testA',
             description="testA",
             dataset=['fileA1', 'fileA2', 'fileA3'],
+            manager_arguments=get_mock_manager_arguments(),
             documentation=Documentation(id=24),
             tools_arguments={'toolA1': ['argA1', 'argA2'], 'toolA2': ['argA3']},
         ),
@@ -34,6 +41,7 @@ class TestManagerRequest():
             name='testB',
             description="testB",
             dataset=['fileB1'],
+            manager_arguments=get_mock_manager_arguments(),
             documentation=Documentation(id=25),
             tools_arguments={'toolB1': ['argB1', 'argB2', 'argB3'], 'toolB2': ['argB4', 'argB5'], 'toolB3': []},
         ),
@@ -44,6 +52,7 @@ class TestManagerRequest():
             name='testC',
             description="testC",
             dataset=['fileC1', 'fileC2', 'fileC3', 'fileC4'],
+            manager_arguments=get_mock_manager_arguments(),
             documentation=Documentation(id=26),
             tools_arguments={'toolC1': []},
         ),
@@ -54,6 +63,7 @@ class TestManagerRequest():
             name='testD',
             description="testD",
             dataset=['fileD1', 'fileD2'],
+            manager_arguments=get_mock_manager_arguments(),
             documentation=Documentation(id=30),
             tools_arguments={'toolD1': ['argD1']},
         )
