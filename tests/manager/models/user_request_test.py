@@ -1,4 +1,5 @@
-from manager.models.user_request import UserRequest, Documentation
+from src.manager.models.user_request import UserRequest 
+from src.manager.models.documentation import Documentation
 
 
 

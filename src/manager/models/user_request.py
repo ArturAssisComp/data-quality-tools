@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .documentation import Documentation
+from src.manager.models.documentation import Documentation
 
 
 class UserRequest (BaseModel):
