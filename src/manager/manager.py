@@ -1,7 +1,7 @@
-from src.manager.models.manager_request  import ManagerRequest
-from src.manager.models.user_request     import UserRequest
-from src.manager.models.user_response    import UserResponse
-from src.manager.models.manager_response import ManagerResponse
+from manager.models.manager_request  import ManagerRequest
+from manager.models.user_request     import UserRequest
+from manager.models.user_response    import UserResponse
+from manager.models.manager_response import ManagerResponse
 '''
 MANAGER 
 - the manager will receive the user request and organize the response;
