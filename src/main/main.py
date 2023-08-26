@@ -35,10 +35,10 @@ def main():
     hello_world_group = hello_world_parser.add_argument_group('Hello World Settings')
     hello_world_group.add_argument("abc", type=str, help="Hello World")
 
-    print('hello')
     args = parser.parse_args()
-    print('world')
-    print(f'{vars(args)} =')
+
+    # TODO parse the manager arguments
+    # TODO redo the design to allow only one tool to be executed at a time
 
 if __name__ == "__main__":
     main()
