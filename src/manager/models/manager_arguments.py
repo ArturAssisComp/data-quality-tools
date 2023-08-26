@@ -18,7 +18,7 @@ class ManagerArguments (BaseModel):
     @field_validator('dataset')
     def check_dataset(cls, v):
         for path in v:
-            if not os.path.isfile(path):
+            if not os.path.isfile(path) and not os.path.isdir(path):
                 raise ValueError(f'{path} is not a valid path.')
         return v
 

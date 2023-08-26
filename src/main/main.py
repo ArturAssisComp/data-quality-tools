@@ -1,6 +1,7 @@
 import argparse
 from tools.null_value_inspector.arguments import add_arguments as null_value_inspector_add_arguments
 from manager.arguments import add_arguments as manager_add_arguments
+from manager.manager import Manager
 
 def main():
     parser = argparse.ArgumentParser(
@@ -37,7 +38,7 @@ def main():
 
     args = parser.parse_args()
 
-    print(vars(args))
+    Manager().process_user_request(vars(args))
 
     # TODO parse the manager arguments
     # TODO redo the design to allow only one tool to be executed at a time

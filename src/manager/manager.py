@@ -1,7 +1,4 @@
-from manager.models.manager_request  import ManagerRequest
-from manager.models.user_request     import UserRequest
-from manager.models.user_response    import UserResponse
-from manager.models.manager_response import ManagerResponse
+from manager.models.manager_arguments import ManagerArguments
 '''
 MANAGER 
 - the manager will receive the user request and organize the response;
@@ -18,19 +15,10 @@ final user;
 
 
 class Manager:
-    user_request:UserRequest
-    manager_request:ManagerRequest
-    #-------------------------
-    user_response:UserResponse
-    manager_response:ManagerResponse
-    #-------------------------
-    output_path:str
-    dataset: list[str]
-    name:str
-    description:str
+    manager_arguments: ManagerArguments
 
     def _process_manager_arguments(self):
-        manager_arguments = self.user_request.manager_arguments
+        manager_arguments = self.manager_arguments
 
         self.output_path = manager_arguments.output_path
         self.dataset = manager_arguments.dataset
@@ -42,9 +30,9 @@ class Manager:
         print('start tools')
         pass
 
-    def process_user_request(self, user_request: UserRequest):
-        self.user_request = user_request
-        self.manager_request = ManagerRequest.from_user_request(self.user_request)
+    def process_user_request(self, raw_user_request: dict):
+        self.manager_arguments = ManagerArguments(**raw_user_request)
+        print(f'Manager arguments: {self.manager_arguments}')
 
         self._process_manager_arguments()
 
