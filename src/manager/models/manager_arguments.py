@@ -5,8 +5,15 @@ from pydantic import BaseModel, field_validator
 class ManagerArguments (BaseModel):
     name: str = ''
     description: str = ''
+    documentation: str = ''
     dataset: list[str]
     output_path: str = ''
+
+    @field_validator('documentation')
+    def check_documentation(cls, v):
+        if v and not os.path.isfile(v):
+            raise ValueError(f'{v} is not a valid path.')
+        return v
 
     @field_validator('dataset')
     def check_dataset(cls, v):
@@ -21,6 +28,9 @@ class ManagerArguments (BaseModel):
             raise ValueError(f'{v} is not a valid path.')
         return v
 
+    class Config:
+        extra = "ignore" 
+    
 
 
 
