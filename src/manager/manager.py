@@ -2,6 +2,7 @@ from typing import Type
 from pydantic import BaseModel
 from globals.interfaces import BaseToolClass
 from manager.models.manager_arguments import ManagerArguments
+import logging
 ## Tools:
 # null value inspector
 from tools.null_value_inspector.constants import CONSTANTS as NULL_VALUE_INSPECTOR_CONSTANTS
@@ -18,6 +19,7 @@ they are done;
 - the manager will receive the messages and organize them for the response to the
 final user;
 '''
+logger = logging.getLogger(__name__)
 
 
 
@@ -31,8 +33,8 @@ class Manager:
     def process_user_request(self, raw_user_request: dict):
         self._get_manager_arguments(raw_user_request)
         self._get_tool_arguments(raw_user_request)
-        print(f'Manager arguments: {self.manager_arguments}')
-        print(f'Tool arguments: {self.tool_arguments}')
+        logger.info(f'Manager arguments: {self.manager_arguments}')
+        logger.info(f'Tool arguments: {self.tool_arguments}')
 
         self._process_tool_request()
 
@@ -54,7 +56,9 @@ class Manager:
                 self.tool_arguments = null_value_inspector_tool_arguments(**raw_user_request)
                 self.tool_class = NullValueInspector
             case None:
-                raise ValueError('Tool name is required')
+                logger.error('Tool name is required')
+                raise ValueError
             case _:
-                raise ValueError(f'Invalid tool name: {tool_name}')
+                logger.error(f'Invalid tool name: {tool_name}')
+                raise ValueError
         

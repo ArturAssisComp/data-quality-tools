@@ -2,6 +2,8 @@ import argparse
 from tools.null_value_inspector.arguments import add_arguments as null_value_inspector_add_arguments
 from manager.arguments import add_arguments as manager_add_arguments
 from manager.manager import Manager
+from logger.config_logger import configure_logger 
+import logging
 
 def main():
     parser = argparse.ArgumentParser(
@@ -38,11 +40,19 @@ def main():
 
     args = parser.parse_args()
 
-    Manager().process_user_request(vars(args))
-    print(f'{vars(args) =}')
+    if args.tool_name is None:
+        print("Error: Please select a tool to run. Use --help or -h to see the available tools.")
+        exit(1)
 
-    # TODO parse the manager arguments
-    # TODO redo the design to allow only one tool to be executed at a time
+    configure_logger()
+    logger = logging.getLogger(__name__)
+    logger.info(f"Starting {args.tool_name} tool.")
+    try:
+        Manager().process_user_request(vars(args))
+    except Exception as e:
+        print('Error during execution. Check the log file for more information.')
+        exit(1)
+
 
 if __name__ == "__main__":
     main()
