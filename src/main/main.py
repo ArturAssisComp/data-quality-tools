@@ -39,6 +39,7 @@ def main():
     args = parser.parse_args()
 
     Manager().process_user_request(vars(args))
+    print(f'{vars(args) =}')
 
     # TODO parse the manager arguments
     # TODO redo the design to allow only one tool to be executed at a time
