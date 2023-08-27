@@ -12,7 +12,7 @@ def configure_logger():
     stdout_handler.setFormatter(basic_formatter)
 
     # Add file handler
-    file_handler = logging.FileHandler(filename="log.txt", mode="a", encoding="utf-8")
+    file_handler = logging.FileHandler(filename="data-quality-tools.log", mode="a", encoding="utf-8")
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(basic_formatter)
 
