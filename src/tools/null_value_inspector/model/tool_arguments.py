@@ -6,6 +6,8 @@ class ToolArguments (BaseModel):
     documentation: str = ''
     dataset: list[str]
     output_path: str = ''
+    null_distribution_by_row_overview:bool = False
+
 
     @field_validator('documentation')
     def check_documentation(cls, v):

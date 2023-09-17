@@ -1,6 +1,8 @@
 from globals.interfaces import BaseToolClass
 from tools.null_value_inspector.model.tool_arguments import ToolArguments
+import logging
 
+logger = logging.getLogger(__name__)
 
 class NullValueInspector(BaseToolClass):
     @classmethod
