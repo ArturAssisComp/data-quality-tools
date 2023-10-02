@@ -9,11 +9,11 @@ def clean(c, docs='false', venv='false'):
         c.run("if exist dist rmdir /S /Q dist")
         c.run("if exist build rmdir /S /Q build")
         c.run("if exist .pytest_cache rmdir /S /Q .pytest_cache")
-        c.run("if exist src\data_quality_tools.egg-info rmdir /S /Q src\data_quality_tools.egg-info")
+        c.run("if exist src\\data_quality_tools.egg-info rmdir /S /Q src\\data_quality_tools.egg-info")
         c.run("FOR /D /R . %G IN (__pycache__) DO if exist %G rmdir /S /Q %G")
         c.run("FOR /R %G IN (*.pyc) DO if exist %G del /F /Q %G")
         if docs=='true':
-            c.run("if exist docs\_build rmdir /S /Q docs\_build")
+            c.run("if exist docs\\_build rmdir /S /Q docs\\_build")
         if venv=='true':
             c.run("if exist venv rmdir /S /Q venv")
     else:
