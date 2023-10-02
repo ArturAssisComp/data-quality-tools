@@ -31,8 +31,12 @@ class Manager:
     
 
     def process_user_request(self, raw_user_request: dict):
-        self._get_manager_arguments(raw_user_request)
-        self._get_tool_arguments(raw_user_request)
+        try:
+            self._get_manager_arguments(raw_user_request)
+            self._get_tool_arguments(raw_user_request)
+        except Exception as e:
+            logger.error(f'Error while reading arguments: {e}')
+            raise
         logger.info(f'Manager arguments: {self.manager_arguments}')
         logger.info(f'Tool arguments: {self.tool_arguments}')
 

@@ -1,4 +1,5 @@
 import argparse
+from tools.null_value_inspector.constants import CONSTANTS as NULL_VALUE_INSPECTOR_CONSTANTS 
 from tools.null_value_inspector.arguments import add_arguments as null_value_inspector_add_arguments
 from manager.arguments import add_arguments as manager_add_arguments
 from manager.manager import Manager
@@ -25,7 +26,8 @@ def main():
     subparsers = parser.add_subparsers(title="Tools", dest="tool_name", description="Available tools for data quality check.")
 
     # Null Value Inspector tool subparser with alias
-    null_value_inspector_parser = subparsers.add_parser("null-value-inspector", aliases=["nvi"], help="Null Value Inspector")
+
+    null_value_inspector_parser = subparsers.add_parser(NULL_VALUE_INSPECTOR_CONSTANTS.tool_name, aliases=[NULL_VALUE_INSPECTOR_CONSTANTS.alias], help="Null Value Inspector")
     null_value_inspector_add_arguments(null_value_inspector_parser)
 
     # new-tool tool subparser
