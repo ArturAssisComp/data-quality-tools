@@ -6,40 +6,40 @@ from tools.null_value_inspector.model.row_null_distribution_snapshot import RowN
 ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE = 'row_null_distribution_snapshot'
 class TestRowNullDistributionSnapshotModel:
     @pytest.mark.parametrize("_id, input_dict, isValid", [
-        ('ValidationError', {
+        ('ValidationError: invalid \'type\'', {
             'type':'other type',
             'files':[],
             'content':{0:12},
             }, False),
-        ('ValidationError', {
+        ('ValidationError: invalid \'files\'', {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':[123],
             'content':{0:12},
             }, False),
-        ('ValidationError', {
+        ('ValidationError: invalid \'content\'', {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':[],
             'content':{'invalid key':12},
+            }, False),
+        ('ValidationError: empty content', {
+            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
+            'files':[],
+            'content':{},
             }, False),
         ('empty files', {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':[],
             'content':{0:12},
             }, True),
-        ('1 file', {
-            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
-            'files':['file1'],
-            'content':{2:1},
-            }, True),
-        ('2 files', {
-            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
-            'files':['file1', 'file2'],
-            'content':{2:1},
-            }, True),
-        ('0 files and 1 content', {
+        ('1 files and 2 contents', {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':[],
             'content':{0:2, 1:4} # 2 rows with 0 nulls, and 4 rows with 1 null
+            }, True),
+        ('2 files and 1 content', {
+            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
+            'files':['file1', 'file2'],
+            'content':{2:1},
             }, True),
     ])
     def test_row_null_distribution_snapshot(self, _id, input_dict:dict, isValid:bool):
