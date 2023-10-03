@@ -2,6 +2,7 @@ from globals.interfaces import BaseToolClass
 from globals.constants import CONSTANTS
 from tools.null_value_inspector.model.tool_arguments import ToolArguments
 from tools.null_value_inspector.model.documentation import Documentation
+from logger.utils import log_footer, log_header
 import pandas as pd
 import os
 import logging
@@ -37,23 +38,19 @@ class NullValueInspector(BaseToolClass):
 
     def _create_snapshots(self, tool_arguments:ToolArguments, snapshot_path:str, documentation:Documentation):
         if tool_arguments.null_distribution_by_row_overview:
-            logger.info('+=======================================+')
-            logger.info('|  ---- Initializing Snapshots... ----  |')
 
+            log_header(logger, 'Initializing Snapshots')
             self._create_snapshot_directory(snapshot_path)
             self._create_row_null_distribution_snapshot(tool_arguments.dataset, snapshot_path, documentation)
+            log_footer(logger, 'Snapshots Finished    ')
 
-            logger.info('|  ---- Snapshots Finished!       ----  |')
-            logger.info('+=======================================+')
     
     def _create_results(self, tool_arguments:ToolArguments):
-        logger.info('+=======================================+')
-        logger.info('|  ---- Initializing Results      ----  |')
+        log_header(logger, 'Initializing Results')
         if tool_arguments.null_distribution_by_row_overview:
             logger.info('Creating null-distribution-by-row-overview')
 
-        logger.info('|  ---- Results Finished!         ----  |')
-        logger.info('+=======================================+')
+        log_footer(logger, 'Results Finished    ')
 
 
     def work_on(self, tool_arguments: ToolArguments):
