@@ -18,10 +18,13 @@ class ManagerArguments (BaseModel):
     @field_validator('dataset', mode='before')
     def split_and_check_dataset(cls, v):
         if isinstance(v, str):  # Convert string to list
-            v = v.split(',')
-        for path in v:
-            if not os.path.isfile(path) and not os.path.isdir(path):
-                raise ValueError(f'{path} is not a valid path.')
+            v = list(map(str.strip, v.split(',')))
+            for raw_path in v:
+                path = raw_path.strip()
+                if not os.path.isfile(path) and not os.path.isdir(path):
+                    raise ValueError(f'{path} is not a valid path.')
+        else:
+            raise TypeError('Expected str type')
         return v
 
     @field_validator('output_path')

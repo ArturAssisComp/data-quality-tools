@@ -60,7 +60,7 @@ def process_arguments(args:argparse.Namespace):
     try:
         Manager().process_user_request(vars(args))
     except Exception as e:  # Ideally be more specific here
-        logger.error(f"Error during execution: {str(e)}")
+        print(f"Error during execution. Check log file for more information.")
         sys.exit(1)
 
 
