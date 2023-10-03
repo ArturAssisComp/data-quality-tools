@@ -39,7 +39,7 @@ class Manager:
 
 
     def _process_tool_request(self):
-        self.tool_class.work_on(self.tool_arguments)
+        self.tool_class().work_on(self.tool_arguments)
 
     def _get_manager_arguments(self, raw_user_request: dict):
         self.manager_arguments = ManagerArguments(**raw_user_request)

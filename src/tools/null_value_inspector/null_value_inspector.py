@@ -9,12 +9,13 @@ import json
 
 logger = logging.getLogger(__name__)
 
+TAB = '  '
 
 
 class NullValueInspector(BaseToolClass):
+    _tmp_snapshot_id:int
 
-    @staticmethod
-    def _get_documentation(documentation_path:str):
+    def _get_documentation(self, documentation_path:str):
         try:
             with open(documentation_path, 'r') as f:
                 # Load JSON data from file
@@ -25,47 +26,50 @@ class NullValueInspector(BaseToolClass):
             documentation = Documentation(**dict())
         return documentation
     
-    @staticmethod
-    def _create_snapshot_directory(snapshot_path:str):
+    def _create_snapshot_directory(self, snapshot_path:str):
         try:
             if not os.path.isdir(snapshot_path):
                 os.makedirs(snapshot_path)
         except Exception as e:
             logger.error(f'Not able to create directories for snapshot path: {e}')
             raise
-        logger.info('Snapshot directory created!')
 
 
-    @classmethod
-    def _create_snapshots(cls, tool_arguments:ToolArguments, snapshot_path:str, documentation:Documentation):
+    def _create_snapshots(self, tool_arguments:ToolArguments, snapshot_path:str, documentation:Documentation):
         if tool_arguments.null_distribution_by_row_overview:
+            logger.info('+=======================================+')
+            logger.info('|  ---- Initializing Snapshots... ----  |')
 
-            logger.info('Creating row_null_distribution_snapshot')
-            cls._create_snapshot_directory(snapshot_path)
-            cls._create_row_null_distribution_snapshot(tool_arguments.dataset, snapshot_path, documentation)
+            self._create_snapshot_directory(snapshot_path)
+            self._create_row_null_distribution_snapshot(tool_arguments.dataset, snapshot_path, documentation)
+
+            logger.info('|  ---- Snapshots Finished!       ----  |')
+            logger.info('+=======================================+')
     
-    @classmethod
-    def _create_results(cls, tool_arguments:ToolArguments):
+    def _create_results(self, tool_arguments:ToolArguments):
+        logger.info('+=======================================+')
+        logger.info('|  ---- Initializing Results      ----  |')
         if tool_arguments.null_distribution_by_row_overview:
             logger.info('Creating null-distribution-by-row-overview')
 
+        logger.info('|  ---- Results Finished!         ----  |')
+        logger.info('+=======================================+')
 
-    @classmethod
-    def work_on(cls, tool_arguments: ToolArguments):
+
+    def work_on(self, tool_arguments: ToolArguments):
         snapshot_path = os.path.join(tool_arguments.output_path, CONSTANTS.FilesFoldersNames.snapshot)
         documentation_path = tool_arguments.documentation
 
-        documentation = cls._get_documentation(documentation_path)
+        documentation = self._get_documentation(documentation_path)
 
         # create the snapshots
-        cls._create_snapshots(tool_arguments, snapshot_path, documentation)
+        self._create_snapshots(tool_arguments, snapshot_path, documentation)
 
         # create the results
-        cls._create_results(tool_arguments)
+        self._create_results(tool_arguments)
     
 
-    @staticmethod
-    def _read_csv(filename:str):
+    def _read_csv(self, filename:str):
         try:
             df = pd.read_csv(filename)
             return df
@@ -73,27 +77,30 @@ class NullValueInspector(BaseToolClass):
             logger.error(f'Invalid CSV file ({filename}): {e}')
             raise
         
-    @staticmethod
-    def _to_json(filename:str, content:dict):
+    def _to_json(self, filename:str, content:dict):
         try:
             with open(filename, 'w') as f:
                 json.dump(content, f)
         except Exception as e:
             logger.error(f'Cannot save the file \'{filename}\' as json: {e}')
             raise
-    @classmethod
-    def _process_directory(cls, directory: str, snapshot_path: str, df_processing_method):
-        logger.info(f'Processing dir {directory}')
+
+    def _process_directory(self, directory: str, snapshot_path: str, df_processing_method):
+        logger.info(f'Scanning dir: \'{directory}\'')
         for dirpath, _, filenames in os.walk(directory):
             for filename in filenames:
                 if filename.endswith(".csv"):
                     full_path = os.path.join(dirpath, filename)
-                    df = cls._read_csv(full_path)
-                    df_processing_method(full_path, df, snapshot_path)
+                    self._process_file(full_path, snapshot_path, df_processing_method)
+
+    def _process_file(self, full_path:str, snapshot_path:str, df_processing_method):
+        logger.info(f'Processing file {full_path}')
+        df = self._read_csv(full_path)
+        df_processing_method(full_path, df, snapshot_path, id=self._tmp_snapshot_id)
+        self._tmp_snapshot_id += 1
 
     # snapshot methods
-    @classmethod
-    def _process_dataframe_to_row_null_distribution_snapshot(cls, filename: str, df: pd.DataFrame, snapshot_path: str, id:int=0):
+    def _process_dataframe_to_row_null_distribution_snapshot(self, file_path: str, df: pd.DataFrame, snapshot_path: str, id:int=0):
         """
         Process a dataframe to extract row null distribution and save it as a snapshot.
 
@@ -103,25 +110,30 @@ class NullValueInspector(BaseToolClass):
         - snapshot_path: Path to save the snapshot.
         """
         try:
-            result = {'type':CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, 'id': id, 'filename': filename, 'snapshot': dict()}
+            result = {'type':CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, 'id': id, 'file_path': file_path, 'snapshot': dict()}
             for num_of_nulls in df.isnull().sum(axis=1):
                 result['snapshot'][num_of_nulls] = result['snapshot'].get(num_of_nulls, 0) + 1
 
             # specify the output file path
             output_file = os.path.join(snapshot_path, ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, str(id), '.json']))
 
-            cls._to_json(output_file, result)
+            self._to_json(output_file, result)
+            logger.info(f'\'{os.path.basename(output_file)}\' created!')
         except Exception as e:
-            logger.error(f'Error while processing the file ({filename}): {e}')
+            logger.error(f'Error while processing the file ({file_path}): {e}')
 
-    @classmethod
-    def _create_row_null_distribution_snapshot(cls, dataset: list[str], snapshot_path: str, documentation:Documentation):
+    def _create_row_null_distribution_snapshot(self, dataset: list[str], snapshot_path: str, documentation:Documentation):
         logger.info('Creating Row Null Distribution Snapshot')
         logger.info('Creating intermediate results')
+        df_processing_method = self._process_dataframe_to_row_null_distribution_snapshot
+        self._tmp_snapshot_id = 0
+        self._loop_through_dataset(dataset, snapshot_path, df_processing_method)
+        self._tmp_snapshot_id = 0
+
+    def _loop_through_dataset(self, dataset:list[str], snapshot_path:str, df_processing_method):
         for file_or_dir in dataset:
+            file_or_dir = os.path.abspath(file_or_dir)
             if os.path.isdir(file_or_dir):
-                cls._process_directory(file_or_dir, snapshot_path, cls._process_dataframe_to_row_null_distribution_snapshot)
+                self._process_directory(file_or_dir, snapshot_path, df_processing_method)
             else:
-                logger.info(f'Processing file {file_or_dir}')
-                df = cls._read_csv(file_or_dir)
-                cls._process_dataframe_to_row_null_distribution_snapshot(file_or_dir, df, snapshot_path, id=0)
+                self._process_file(file_or_dir, snapshot_path, df_processing_method)
