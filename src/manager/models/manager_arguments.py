@@ -1,5 +1,5 @@
 import os
-from pydantic import BaseModel, field_validator 
+from pydantic import BaseModel, field_validator
 
 
 class ManagerArguments (BaseModel):
@@ -15,8 +15,10 @@ class ManagerArguments (BaseModel):
             raise ValueError(f'{v} is not a valid path.')
         return v
 
-    @field_validator('dataset')
-    def check_dataset(cls, v):
+    @field_validator('dataset', mode='before')
+    def split_and_check_dataset(cls, v):
+        if isinstance(v, str):  # Convert string to list
+            v = v.split(',')
         for path in v:
             if not os.path.isfile(path) and not os.path.isdir(path):
                 raise ValueError(f'{path} is not a valid path.')

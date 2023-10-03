@@ -6,15 +6,14 @@ class ToolArguments (BaseModel):
     documentation: str = ''
     dataset: list[str]
     output_path: str = ''
+    null_distribution_by_row_overview:bool = False
 
-    @field_validator('documentation')
-    def check_documentation(cls, v):
-        if v and not os.path.isfile(v):
-            raise ValueError(f'{v} is not a valid path.')
-        return v
 
-    @field_validator('dataset')
-    def check_dataset(cls, v):
+
+    @field_validator('dataset', mode='before')
+    def split_and_check_dataset(cls, v):
+        if isinstance(v, str):  # Convert string to list
+            v = v.split(',')
         for path in v:
             if not os.path.isfile(path) and not os.path.isdir(path):
                 raise ValueError(f'{path} is not a valid path.')
@@ -28,3 +27,4 @@ class ToolArguments (BaseModel):
 
     class Config:
         extra = "ignore"
+

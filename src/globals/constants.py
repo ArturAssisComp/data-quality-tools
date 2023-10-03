@@ -1,6 +1,9 @@
 from globals.interfaces import Immutable
 
 class CONSTANTS(Immutable):
+    class FilesFoldersNames(Immutable):
+        snapshot = 'snapshot'
+        row_null_distribution_snapshot='row-null-distribution-snapshot'
     class Logger(Immutable):
         class Formatters(Immutable):
             basic_log_formatter = {
