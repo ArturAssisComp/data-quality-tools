@@ -2,6 +2,7 @@ import logging
 import json
 from globals.constants import CONSTANTS
 
+from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
 import pandas as pd
 import os
@@ -9,7 +10,7 @@ import tools.null_value_inspector.snapshot.row_null_distribution.model.model as 
 
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
 class RowNullDistributionSnapshot:
     _tmp_snapshot_id:int

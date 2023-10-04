@@ -7,9 +7,9 @@ from globals.constants import CONSTANTS
 from tools.null_value_inspector.model.tool_arguments import ToolArguments
 from tools.null_value_inspector.model.documentation import Documentation
 from tools.null_value_inspector.snapshot.row_null_distribution.row_null_distribution_snapshot import RowNullDistributionSnapshot
-from logger.utils import log_footer, log_header
+from logger.utils import log_footer, log_header, get_custom_logger_name
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(get_custom_logger_name(__name__))
 
 
 
