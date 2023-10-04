@@ -1,6 +1,6 @@
 import pytest
 import pydantic
-from tools.null_value_inspector.model.row_null_distribution_snapshot import RowNullDistributionSnapshot
+from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshot
 
 
 ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE = 'row_null_distribution_snapshot'
