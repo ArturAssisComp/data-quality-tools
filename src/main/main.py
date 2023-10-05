@@ -7,6 +7,7 @@ from tools.null_value_inspector.arguments import add_arguments as null_value_ins
 from manager.arguments import add_arguments as manager_add_arguments
 from manager.manager import Manager
 from logger.config_logger import configure_logger 
+from logger.utils import get_custom_logger_name
 
 
 def initialize_parser():
@@ -54,7 +55,7 @@ def process_arguments(args:argparse.Namespace):
         sys.exit(1)
     
     configure_logger()
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(get_custom_logger_name(__name__))
     logger.info(f"Starting {args.tool_name} tool.")
     
     try:

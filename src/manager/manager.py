@@ -4,13 +4,14 @@ import logging
 
 from globals.interfaces import BaseToolClass
 from manager.models.manager_arguments import ManagerArguments
+from logger.utils import get_custom_logger_name
 ## Tools:
 # null value inspector
 from tools.null_value_inspector.constants import CONSTANTS as NULL_VALUE_INSPECTOR_CONSTANTS
 from tools.null_value_inspector.model.tool_arguments import ToolArguments as null_value_inspector_tool_arguments
 from tools.null_value_inspector.null_value_inspector import NullValueInspector
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(get_custom_logger_name(__name__))
 
 
 
