@@ -9,6 +9,7 @@ class RowNullDistributionSnapshot(BaseModel):
     type:Literal['row_null_distribution_snapshot'] = ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE
     files:list[str] = list()
     content:dict[int, int]
+    state:Literal['initial', 'free-mode', 'strict-mode'] = 'initial'
 
     @field_validator('content')
     def content_validator(cls, v):

@@ -23,6 +23,7 @@ class NullValueInspector(BaseToolClass):
                 # Load JSON data from file
                 data = json.load(f)
                 documentation = Documentation(**data)
+                logger.info(f'Documentation read: {documentation}')
         except Exception as e:
             logger.info(f'No documentation provided: {e}')
             documentation = Documentation(**dict())

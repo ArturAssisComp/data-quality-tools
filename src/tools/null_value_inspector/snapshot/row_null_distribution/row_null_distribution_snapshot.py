@@ -1,7 +1,8 @@
 import logging
-import json
 from globals.constants import CONSTANTS
+from typing import Literal
 
+from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
 import pandas as pd
@@ -10,20 +11,86 @@ import tools.null_value_inspector.snapshot.row_null_distribution.model.model as 
 
 
 
+
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
+SNAPSHOT_STATE = Literal['initial', 'free-mode', 'strict-mode']
+
+
 class RowNullDistributionSnapshot:
-    _tmp_snapshot_id:int
+    _logger:logging.Logger
+    _fileOperations:FileOperations
+    _row_null_distribution_snapshot:model.RowNullDistributionSnapshot
+    _state:SNAPSHOT_STATE
+    _documentation:Documentation
+
+    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
+        self._logger = logger
+        self._fileOperations = fileOperations
+        self._state = 'initial'
+
+    def _set_state(self):
+        if self._documentation.column is None:
+            self._state = 'free-mode'
+            self._logger.warning('Executing in FREE MODE')
+        else:
+            self._state = 'strict-mode'
+            self._logger.info('Executing in STRICT MODE')
+        self._row_null_distribution_snapshot.state = self._state
+
+    def _reset(self):
+        ''' Executed before creating the snapshot '''
+        self._row_null_distribution_snapshot = model.RowNullDistributionSnapshot.get_basic_instance()
+        self._row_null_distribution_snapshot.content = dict()
+        self._set_state()
+
 
     def create_row_null_distribution_snapshot(self, dataset: list[str], snapshot_path: str, documentation:Documentation):
-        logger.info('Creating Row Null Distribution Snapshot')
-        logger.info('Creating intermediate results')
-        df_processing_method = self._process_dataframe_to_row_null_distribution_snapshot
-        self._tmp_snapshot_id = 0
-        self._loop_through_dataset(dataset, snapshot_path, df_processing_method)
-        self._tmp_snapshot_id = 0
+        self._documentation = documentation
+        self._reset()
+        self._logger.info('Creating Row Null Distribution Snapshot')
+        df_processing_method = self.process_dataframe_to_row_null_distribution_snapshot
+        self._loop_through_dataset(dataset, df_processing_method)
+        self._save_snapshot_to_json(snapshot_path)
 
-    def _process_dataframe_to_row_null_distribution_snapshot(self, file_path: str, df: pd.DataFrame, snapshot_path: str, id:int=0):
+    def _save_snapshot_to_json(self, snapshot_path:str):
+        # specify the output file path
+        output_file = os.path.join(snapshot_path, ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, '.json']))
+
+        try:
+            self._fileOperations.to_json(output_file, self._row_null_distribution_snapshot.model_dump())
+            self._logger.info(f'\'{os.path.basename(output_file)}\' created!')
+        except Exception as e:
+            self._logger.error(f'Error while creating snapshot json: {e}')
+            raise
+
+    def _file_will_be_processed(self, documentation:Documentation, state:SNAPSHOT_STATE, df:pd.DataFrame):
+        file_will_be_processed:bool = True
+        match state:
+            case 'initial':
+                logger.error('Inconsistent state. Should be free-mode or strict-mode')
+                raise RuntimeError
+            case 'strict-mode':
+                if documentation.column:
+                    columns = set(documentation.column)
+                    df_columns = set(df.columns)
+                    if columns != df_columns:
+                        file_will_be_processed = False
+                        more = df_columns - columns
+                        less = columns - df_columns
+
+                        more_str = f"+ {more}" if more else ""
+                        less_str = f"- {less}" if less else ""
+
+                        if more_str or less_str:
+                            logger.warning(f'Invalid columns: {more_str} {less_str}')
+                else:
+                    logger.error('Inconsistent documentation')
+                    raise RuntimeError
+        return file_will_be_processed
+
+
+    def process_dataframe_to_row_null_distribution_snapshot(self, file_path: str, df: pd.DataFrame, documentation:Documentation|None=None, state:SNAPSHOT_STATE|None=None):
         """
         Process a dataframe to extract row null distribution and save it as a snapshot.
 
@@ -32,56 +99,45 @@ class RowNullDistributionSnapshot:
         - df: The dataframe to be processed.
         - snapshot_path: Path to save the snapshot.
         """
-        try:
-            result = {'type':CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, 'id': id, 'file_path': file_path, 'snapshot': dict()}
-            for num_of_nulls in df.isnull().sum(axis=1):
-                result['snapshot'][num_of_nulls] = result['snapshot'].get(num_of_nulls, 0) + 1
+        if documentation is None:
+            documentation = self._documentation
+        if state is None:
+            state = self._state
 
-            # specify the output file path
-            output_file = os.path.join(snapshot_path, ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, str(id), '.json']))
+        if self._file_will_be_processed(documentation, state, df):
+            try:
+                self._row_null_distribution_snapshot.files.append(file_path)
+                for num_of_nulls in df.isnull().sum(axis=1):
+                    self._row_null_distribution_snapshot.content[num_of_nulls] = self._row_null_distribution_snapshot.content.get(num_of_nulls, 0) + 1
+                logger.info(f'OK! ✔️ ')
 
-            self._to_json(output_file, result)
-            logger.info(f'\'{os.path.basename(output_file)}\' created!')
-        except Exception as e:
-            logger.error(f'Error while processing the file ({file_path}): {e}')
+            except Exception as e:
+                self._logger.error(f'Error while processing the file ({file_path}): {e}')
+        else:
+            logger.warning(f'SKIPPED! X')
 
         
-    def _loop_through_dataset(self, dataset:list[str], snapshot_path:str, df_processing_method):
+    # TODO extract the following methods in the future for other snapshots
+
+    def _loop_through_dataset(self, dataset:list[str], df_processing_method):
         for file_or_dir in dataset:
             file_or_dir = os.path.abspath(file_or_dir)
             if os.path.isdir(file_or_dir):
-                self._process_directory(file_or_dir, snapshot_path, df_processing_method)
+                self._process_directory(file_or_dir, df_processing_method)
             else:
-                self._process_file(file_or_dir, snapshot_path, df_processing_method)
+                self._process_file(file_or_dir, df_processing_method)
     
 
 
-    def _process_directory(self, directory: str, snapshot_path: str, df_processing_method):
-        logger.info(f'Scanning dir: \'{directory}\'')
+    def _process_directory(self, directory: str, df_processing_method):
+        self._logger.info(f'Scanning dir: \'{directory}\'')
         for dirpath, _, filenames in os.walk(directory):
             for filename in filenames:
                 if filename.endswith(".csv"):
                     full_path = os.path.join(dirpath, filename)
-                    self._process_file(full_path, snapshot_path, df_processing_method)
+                    self._process_file(full_path, df_processing_method)
 
-    def _process_file(self, full_path:str, snapshot_path:str, df_processing_method):
-        logger.info(f'Processing file {full_path}')
-        df = self._read_csv(full_path)
-        df_processing_method(full_path, df, snapshot_path, id=self._tmp_snapshot_id)
-        self._tmp_snapshot_id += 1
-
-    def _read_csv(self, filename:str):
-        try:
-            df = pd.read_csv(filename)
-            return df
-        except Exception as e:
-            logger.error(f'Invalid CSV file ({filename}): {e}')
-            raise
-        
-    def _to_json(self, filename:str, content:dict):
-        try:
-            with open(filename, 'w') as f:
-                json.dump(content, f)
-        except Exception as e:
-            logger.error(f'Cannot save the file \'{filename}\' as json: {e}')
-            raise
+    def _process_file(self, full_path:str, df_processing_method):
+        self._logger.info(f'Processing file {full_path}')
+        df = self._fileOperations.read_csv(full_path)
+        df_processing_method(full_path, df)
