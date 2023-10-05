@@ -45,10 +45,11 @@ class TestRowNullDistributionSnapshotModel:
     def test_row_null_distribution_snapshot(self, _id, input_dict:dict, isValid:bool):
         if isValid:
             result = RowNullDistributionSnapshot(**input_dict)
-            assert len(result.model_dump()) == 3
+            assert len(result.model_dump()) == 4
             assert result.type == ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE
             assert set(input_dict['files']) == set(result.files)
             assert input_dict['content'] == result.content
+            assert result.state == 'initial'
         else:
             with pytest.raises(pydantic.ValidationError):
                 RowNullDistributionSnapshot(**input_dict)
@@ -62,19 +63,22 @@ class TestRowNullDistributionSnapshotModel:
         assert result.model_dump() == {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':['file1'],
-            'content':{0:2, 1:4} # 2 rows with 0 nulls, and 4 rows with 1 null
+            'content':{0:2, 1:4}, # 2 rows with 0 nulls, and 4 rows with 1 null
+            'state':'initial',
         }
 
     def test_update_the_content(self):
         result = RowNullDistributionSnapshot(**{
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':['file1'],
-            'content':{0:2, 1:4} 
+            'content':{0:2, 1:4},
+            'state':'initial',
         })
         assert result.model_dump() == {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':['file1'],
-            'content':{0:2, 1:4} # 2 rows with 0 nulls, and 4 rows with 1 null
+            'content':{0:2, 1:4}, # 2 rows with 0 nulls, and 4 rows with 1 null
+            'state':'initial',
         }
         result.content[0] += 1
         result.content[34] = 12
@@ -82,7 +86,8 @@ class TestRowNullDistributionSnapshotModel:
         assert result.model_dump() == {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':['file1'],
-            'content':{0:3, 1:4, 34:12} # 2 rows with 0 nulls, and 4 rows with 1 null
+            'content':{0:3, 1:4, 34:12}, # 2 rows with 0 nulls, and 4 rows with 1 null
+            'state':'initial',
         }
     
     class TestGetBasicInstance:
@@ -91,13 +96,15 @@ class TestRowNullDistributionSnapshotModel:
             assert basic_instance.model_dump() == {
                 'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
                 'files':[],
-                'content':{0:0} 
+                'content':{0:0},
+                'state':'initial',
             }
             basic_instance.content = dict()
             assert basic_instance.model_dump() == {
                 'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
                 'files':[],
-                'content':{}
+                'content':{},
+                'state':'initial',
             }
             basic_instance.files.append('file1')
             basic_instance.content[0] = 1
@@ -105,5 +112,6 @@ class TestRowNullDistributionSnapshotModel:
             assert basic_instance.model_dump() == {
                 'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
                 'files':['file1'],
-                'content':{0:1, 10:2}
+                'content':{0:1, 10:2},
+                'state':'initial',
             }
