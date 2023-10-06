@@ -16,6 +16,8 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 
 SNAPSHOT_STATE = Literal['initial', 'free-mode', 'strict-mode']
 
+SNAPSHOT_FILE_NAME = ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, '.json'])
+
 
 class RowNullDistributionSnapshot:
     _logger:logging.Logger
@@ -55,7 +57,7 @@ class RowNullDistributionSnapshot:
 
     def _save_snapshot_to_json(self, snapshot_path:str):
         # specify the output file path
-        output_file = os.path.join(snapshot_path, ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, '.json']))
+        output_file = os.path.join(snapshot_path, SNAPSHOT_FILE_NAME)
 
         try:
             self._fileOperations.to_json(output_file, self._row_null_distribution_snapshot.model_dump())
