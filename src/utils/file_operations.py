@@ -21,6 +21,15 @@ class FileOperations:
         except Exception as e:
             self._logger.error(f'Invalid CSV file ({filename}): {e}')
             raise
+    def read_Json(self, filename:str):
+        try:
+            with open(filename, 'r') as f:
+                js = json.load(f)
+                return js
+        except Exception as e:
+            self._logger.error(f'Invalid JSON file ({filename}): {e}')
+            raise
+
         
     def to_json(self, filename:str, content:dict):
         try:
