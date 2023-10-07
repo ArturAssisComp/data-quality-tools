@@ -5,11 +5,12 @@ from typing import Literal
 ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE:Literal['row_null_distribution_snapshot'] = 'row_null_distribution_snapshot'
 
 
-class RowNullDistributionSnapshot(BaseModel):
+class RowNullDistributionSnapshotModel(BaseModel):
     type:Literal['row_null_distribution_snapshot'] = ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE
     files:list[str] = list()
     content:dict[int, int]
     state:Literal['initial', 'free-mode', 'strict-mode'] = 'initial'
+    num_of_columns:int|None = None
 
     @field_validator('content')
     def content_validator(cls, v):
