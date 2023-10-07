@@ -17,6 +17,11 @@ class RowNullDistributionSnapshotModel(BaseModel):
         if(len(v) == 0):
             raise ValueError('Content must not be empty.')
         return v
+    
+    @field_validator('content')
+    def num_of_column_validator(cls, v):
+        if v and v <= 0:
+            raise ValueError(f'num_of_columns ({v}) must be positive')
 
     class Config:
         extra = 'forbid' 
