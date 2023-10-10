@@ -7,6 +7,7 @@ class ToolArguments (BaseModel):
     dataset: list[str]
     output_path: str = ''
     null_distribution_by_row_overview:bool = False
+    statistical_summary_overview:bool = False
 
 
 

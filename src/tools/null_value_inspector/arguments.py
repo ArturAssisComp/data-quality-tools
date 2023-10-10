@@ -27,3 +27,19 @@ def add_arguments(tool_subparser:ArgumentParser):
         default=False,
         help=help_text
     )
+
+    help_text = (
+        "Format: JSON | "
+        "Description: Multiple metrics that will help assessing the quality of the data in analysis; | "
+        "Snapshot: 'row_null_distribution_snapshot', 'column_null_count_snapshot' | "
+        "Insight: Statistical insights"
+    )
+
+    null_value_inspector_group.add_argument(
+        '--statistical-summary-overview',
+        '--ss',
+        '-n1',
+        action='store_true',
+        default=False,
+        help=help_text
+    )
