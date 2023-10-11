@@ -5,8 +5,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 
 from logger.utils import get_custom_logger_name
-from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshot
-from tools.null_value_inspector.snapshot.row_null_distribution.row_null_distribution_snapshot import SNAPSHOT_FILE_NAME
+from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotModel
 from utils.file_operations import FileOperations
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 2, 'last'))
@@ -14,7 +13,7 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 class NullDistributionByRowOverviewGenerator:
     _logger:logging.Logger
     _fileOperations:FileOperations
-    _row_null_distribution_snapshot:RowNullDistributionSnapshot
+    _row_null_distribution_snapshot:RowNullDistributionSnapshotModel
     _row_null_distribution_snapshot_filepath:str
     _base_result_filepath:str
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations()):
@@ -23,7 +22,7 @@ class NullDistributionByRowOverviewGenerator:
     
     def generate_overview(self, row_null_distribution_snapshot_filepath:str, base_result_filepath:str):
         self._logger.info('Creating overview')
-        self._row_null_distribution_snapshot = RowNullDistributionSnapshot(** self._fileOperations.read_Json(row_null_distribution_snapshot_filepath))
+        self._row_null_distribution_snapshot = RowNullDistributionSnapshotModel(** self._fileOperations.read_Json(row_null_distribution_snapshot_filepath))
         self._row_null_distribution_snapshot_filepath = row_null_distribution_snapshot_filepath
         self._base_result_filepath = base_result_filepath
         try:

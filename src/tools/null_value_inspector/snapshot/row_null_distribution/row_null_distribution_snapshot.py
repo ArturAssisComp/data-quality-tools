@@ -22,7 +22,7 @@ SNAPSHOT_FILE_NAME = ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_
 class RowNullDistributionSnapshot:
     _logger:logging.Logger
     _fileOperations:FileOperations
-    _row_null_distribution_snapshot:model.RowNullDistributionSnapshot
+    _row_null_distribution_snapshot:model.RowNullDistributionSnapshotModel
     _state:SNAPSHOT_STATE
     _documentation:Documentation
 
@@ -42,7 +42,7 @@ class RowNullDistributionSnapshot:
 
     def _reset(self):
         ''' Executed before creating the snapshot '''
-        self._row_null_distribution_snapshot = model.RowNullDistributionSnapshot.get_basic_instance()
+        self._row_null_distribution_snapshot = model.RowNullDistributionSnapshotModel.get_basic_instance()
         self._row_null_distribution_snapshot.content = dict()
         self._set_state()
 
