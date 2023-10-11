@@ -73,24 +73,25 @@ class NullValueInspector(BaseToolClass):
     def _create_results(self, tool_arguments:ToolArguments):
         self._create_directory(self._base_result_path)
         log_header(logger, 'Initializing Results')
-        if tool_arguments.null_distribution_by_row_overview:
-            logger.info('Creating null_distribution_by_row_overview')
-            if not self._snapshot_is_available(self._row_null_distribution_snapshot_path):
-                logger.error('Invalid row_null_distribution_snapshot')
-            else:
-                NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
         if tool_arguments.statistical_summary_overview:
             logger.info('Creating summary_overview')
             if not self._snapshot_is_available(self._row_null_distribution_snapshot_path):
                 logger.error('Invalid row_null_distribution_snapshot')
             else:
                 StatisticalSummaryOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path, self._documentation) # type: ignore
+        if tool_arguments.null_distribution_by_row_overview:
+            logger.info('Creating null_distribution_by_row_overview')
+            if not self._snapshot_is_available(self._row_null_distribution_snapshot_path):
+                logger.error('Invalid row_null_distribution_snapshot')
+            else:
+                NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
         log_footer(logger, 'Results Finished    ')
     
     def _snapshot_is_available(self, snapshot_path:str|None):
         return snapshot_path and os.path.isfile(snapshot_path)
 
 
+    # TODO extract this method to the FileOperations class
     def _create_directory(self, path:str):
         try:
             if not os.path.isdir(path):
