@@ -32,6 +32,7 @@ class NullDistributionByRowOverviewGenerator:
             self._logger.error(f'Result not generated: {e}')
 
 
+    # TODO refactor the generate bar plot absolute and relative
     def _generate_bar_plot(self):
         # parameters
         TITLE = 'Null Distribution by Row Overview'
