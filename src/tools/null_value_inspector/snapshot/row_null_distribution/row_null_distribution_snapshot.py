@@ -66,6 +66,7 @@ class RowNullDistributionSnapshot:
             self._logger.error(f'Error while creating snapshot json: {e}')
             raise
 
+    # TODO refactor method _file_will_be_processed
     def _file_will_be_processed(self, documentation:Documentation, state:SNAPSHOT_STATE, df:pd.DataFrame):
         file_will_be_processed:bool = True
         match state:
@@ -119,7 +120,7 @@ class RowNullDistributionSnapshot:
             logger.warning(f'SKIPPED! X')
 
         
-    # TODO extract the following methods in the future for other snapshots
+    # TODO extract the following methods in the future for other snapshots. Refactor them to the class FileOperations.
 
     def _loop_through_dataset(self, dataset:list[str], df_processing_method):
         for file_or_dir in dataset:
