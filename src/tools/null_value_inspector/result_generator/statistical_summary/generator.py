@@ -68,23 +68,26 @@ class StatisticalSummaryOverviewGenerator:
         self._fileOperations.to_json(os.path.join(self._base_result_filepath, 'statistical_summary.json'), statistical_summary)
 
         # save to a pdf
-        self._generate_pdf_report(statistical_summary, os.path.join(self._base_result_filepath, 'report.pdf'))
+        try:
+            self._generate_pdf_report(statistical_summary, os.path.join(self._base_result_filepath, 'report.pdf'))
+        finally:
+            plt.close()
 
         self._logger.info('statistical_summary.json generated!')
 
 
     def _generate_pdf_report(self, data:dict, output_filename="report.pdf"):
-        # Plotting data
-        labels = 'Total Nulls', 'Not Null'
-        sizes = [data['general_summary']['total_nulls'], data['general_summary']['total_rows'] - data['general_summary']['total_nulls']]
-        colors = ['red', 'green']
+        if data['general_summary']['total_cells']:
+            # Plotting data
+            labels = 'Total Nulls', 'Not Null'
+            sizes = [data['general_summary']['total_nulls'], data['general_summary']['total_cells'] - data['general_summary']['total_rows']]
+            colors = ['red', 'green']
 
-        _, ax1 = plt.subplots()
-        ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-        ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-        plt.title("Nulls Distribution")
-        plt.savefig("pie_chart.png")
-        plt.close()
+            _, ax1 = plt.subplots()
+            ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+            ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+            plt.title("Nulls Distribution")
+            plt.savefig("pie_chart.png")
 
         # Create PDF using reportlab
         c = canvas.Canvas(output_filename, pagesize=landscape(letter))
@@ -96,9 +99,11 @@ class StatisticalSummaryOverviewGenerator:
         c.drawString(1 * inch, 6.2 * inch, f"Average Nulls Per Row: {data['average_nulls_per_row']}")
         c.drawString(1 * inch, 6 * inch, f"Std Deviation Nulls Per Row: {data['std_deviation_nulls_per_row']}")
 
-        c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
+        if data['general_summary']['total_cells']:
+            c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
         c.showPage()
         c.save()
+        self._logger.info('report.pdf generated!')
 
     def _create_general_summary(self, distribution_by_row:dict[int, int]):
         total_rows = sum(distribution_by_row.values())
@@ -108,15 +113,18 @@ class StatisticalSummaryOverviewGenerator:
         if self._documentation.column:
             column_list = self._documentation.column
             total_columns = len(self._documentation.column)
-            total_nulls_percentage = round(100 * total_nulls / (total_rows * total_columns), 2)
+            total_cells = total_rows * total_columns
+            total_nulls_percentage = round(100 * total_nulls / (total_cells), 2)
         else:
             column_list = None
             total_columns = None
+            total_cells = None
             total_nulls_percentage = None
 
         return {
             'total_rows': total_rows,
             'total_nulls':total_nulls,
+            'total_cells':total_cells,
             'max_nulls_per_row':max_nulls_per_row,
             'min_nulls_per_row':min_nulls_per_row,
             'total_columns':total_columns,
