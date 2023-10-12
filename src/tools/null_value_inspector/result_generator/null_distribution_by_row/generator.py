@@ -26,8 +26,14 @@ class NullDistributionByRowOverviewGenerator:
         self._row_null_distribution_snapshot_filepath = row_null_distribution_snapshot_filepath
         self._base_result_filepath = base_result_filepath
         try:
-            self._generate_bar_plot()
-            self._generate_bar_plot_by_percentage()
+            try:
+                self._generate_bar_plot()
+            finally:
+                plt.close()
+            try:
+                self._generate_bar_plot_by_percentage()
+            finally:
+                plt.close()
         except Exception as e:
             self._logger.error(f'Result not generated: {e}')
 
@@ -41,6 +47,7 @@ class NullDistributionByRowOverviewGenerator:
         CONTENT_SIZE_LIMIT = 20
         VALUE_SIZE_LIMIT = 1000
         FIG_NAME = 'abs_null_distribution_by_row_overview.png'
+        MAX_WIDTH = 25
 
         # Use a style for the plot
         plt.style.use('ggplot')
@@ -49,6 +56,11 @@ class NullDistributionByRowOverviewGenerator:
 
         # Sort the dictionary by key
         content = dict(sorted(content.items()))
+
+        # calculate average value
+        total_nulls = sum(k * v for k, v in content.items())
+        total_rows = sum(content.values())
+        average_value = total_nulls / total_rows
 
         # Create lists of keys and values
         x = list(content.keys())
@@ -67,9 +79,13 @@ class NullDistributionByRowOverviewGenerator:
         # Add a title
         plt.title(TITLE)
 
+        # Add a vertical line at the average value
+        plt.axvline(average_value, color='r', linestyle='--', label=f'Average: {average_value:.2f}')
+        plt.legend()  # Display the legend to show what the vertical line represents
+
 
         # Add data labels on top of the bars
-        if len(content) <= CONTENT_SIZE_LIMIT and max(content.values()) < VALUE_SIZE_LIMIT:
+        if len(content) <= CONTENT_SIZE_LIMIT and max(content.values()) < VALUE_SIZE_LIMIT and  max(content) - min(content) <= MAX_WIDTH:
             for bar in bars:
                 yval = bar.get_height()
                 plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval}', va='bottom', ha='center') # va: vertical alignment, ha: horizontal alignment
@@ -88,7 +104,7 @@ class NullDistributionByRowOverviewGenerator:
         X_LABEL = 'Null Per Row'
         Y_LABEL = 'Percentage of Rows'  # Update the y-axis label
         CONTENT_SIZE_LIMIT = 20
-        VALUE_SIZE_LIMIT = 1000
+        MAX_WIDTH = 25
         FIG_NAME = 'rel_null_distribution_by_row_overview.png'
 
         # Use a style for the plot
@@ -98,6 +114,11 @@ class NullDistributionByRowOverviewGenerator:
 
         # Sort the dictionary by key
         content = dict(sorted(content.items()))
+
+        # calculate average value
+        total_nulls = sum(k * v for k, v in content.items())
+        total_rows = sum(content.values())
+        average_value = total_nulls / total_rows
 
         # Create lists of keys and values
         x = list(content.keys())
@@ -117,8 +138,12 @@ class NullDistributionByRowOverviewGenerator:
         # Add a title
         plt.title(TITLE)
 
+        # Add a vertical line at the average value
+        plt.axvline(average_value, color='r', linestyle='--', label=f'Average: {average_value:.2f}')
+        plt.legend()  # Display the legend to show what the vertical line represents
+
         # Add data labels on top of the bars
-        if len(content) <= CONTENT_SIZE_LIMIT and max(y) < VALUE_SIZE_LIMIT:
+        if len(content) <= CONTENT_SIZE_LIMIT and max(content) - min(content) <= MAX_WIDTH:
             for bar in bars:
                 yval = bar.get_height()
                 plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}%', va='bottom', ha='center') # Add percentage sign to the label
