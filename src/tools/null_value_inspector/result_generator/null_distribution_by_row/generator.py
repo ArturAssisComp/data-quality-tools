@@ -10,6 +10,25 @@ from utils.file_operations import FileOperations
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 2, 'last'))
 
+# constants
+BAR_PLOT_SETTINGS = {
+    'relative': {
+        'y_label': 'Percentage of Rows',
+        'fig_name': 'rel_null_distribution_by_row_overview.png',
+        'suffix': '%'
+    },
+    'absolute': {
+        'y_label': 'Row Count',
+        'fig_name': 'abs_null_distribution_by_row_overview.png',
+        'suffix': ''
+    }
+}
+CONTENT_SIZE_LIMIT = 20
+VALUE_SIZE_LIMIT = 1000
+MAX_WIDTH = 25
+X_LABEL = 'Null Per Row'
+TITLE = 'Null Distribution by Row Overview'
+
 class NullDistributionByRowOverviewGenerator:
     _logger:logging.Logger
     _fileOperations:FileOperations
@@ -31,40 +50,44 @@ class NullDistributionByRowOverviewGenerator:
             finally:
                 plt.close()
             try:
-                self._generate_bar_plot_by_percentage()
+                self._generate_bar_plot(relative=True)
             finally:
                 plt.close()
         except Exception as e:
             self._logger.error(f'Result not generated: {e}')
 
 
-    # TODO refactor the generate bar plot absolute and relative
-    def _generate_bar_plot(self):
-        # parameters
-        TITLE = 'Null Distribution by Row Overview'
-        X_LABEL = 'Null Per Row'
-        Y_LABEL = 'Row Count'
-        CONTENT_SIZE_LIMIT = 20
-        VALUE_SIZE_LIMIT = 1000
-        FIG_NAME = 'abs_null_distribution_by_row_overview.png'
-        MAX_WIDTH = 25
 
-        # Use a style for the plot
-        plt.style.use('ggplot')
+    def _should_add_label_on_top(self, content, relative):
+        basic_check = len(content) <= CONTENT_SIZE_LIMIT and max(content) - min(content) <= MAX_WIDTH
+        if relative:
+            return basic_check
+        return basic_check and max(content.values()) < VALUE_SIZE_LIMIT
 
+    def _generate_bar_plot(self, relative:bool=False):
         content = self._row_null_distribution_snapshot.content
-
-        # Sort the dictionary by key
         content = dict(sorted(content.items()))
 
-        # calculate average value
         total_nulls = sum(k * v for k, v in content.items())
         total_rows = sum(content.values())
         average_value = total_nulls / total_rows
 
-        # Create lists of keys and values
         x = list(content.keys())
-        y = list(content.values())
+        y = [value/total_rows * 100 for value in content.values()] if relative else list(content.values())
+        
+        settings_key = 'relative' if relative else 'absolute'
+        settings = BAR_PLOT_SETTINGS[settings_key]
+        
+        has_label_on_top = self._should_add_label_on_top(content, relative)
+
+        self._plot_figure(x, y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, settings['fig_name'], relative, settings['suffix'])
+
+        self._logger.info(f'{settings["fig_name"]} generated!')
+
+
+    def _plot_figure(self, x:list[int], y:list[float]|list[int], y_label:str, x_label:str, title:str, average_value:float, has_label_on_top:bool, fig_name:str, relative:bool, suffix:str):
+        # Use a style for the plot
+        plt.style.use('ggplot')
 
         # Create a color map
         cmap = plt.get_cmap('viridis')
@@ -73,11 +96,11 @@ class NullDistributionByRowOverviewGenerator:
         bars = plt.bar(x, y, color=cmap(np.linspace(0, 1, len(y))))
 
         # Label the axes
-        plt.xlabel(X_LABEL)
-        plt.ylabel(Y_LABEL)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
 
         # Add a title
-        plt.title(TITLE)
+        plt.title(title)
 
         # Add a vertical line at the average value
         plt.axvline(average_value, color='r', linestyle='--', label=f'Average: {average_value:.2f}')
@@ -85,76 +108,19 @@ class NullDistributionByRowOverviewGenerator:
 
 
         # Add data labels on top of the bars
-        if len(content) <= CONTENT_SIZE_LIMIT and max(content.values()) < VALUE_SIZE_LIMIT and  max(content) - min(content) <= MAX_WIDTH:
+        if has_label_on_top:
             for bar in bars:
                 yval = bar.get_height()
-                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval}', va='bottom', ha='center') # va: vertical alignment, ha: horizontal alignment
-
-        # Ensure x-axis only displays integer values
-        plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-
-        # Save the plot to a PNG file with high resolution
-        plt.savefig(os.path.join(self._base_result_filepath, FIG_NAME), dpi=300)
-        plt.close()
-        self._logger.info('abs_null_distribution_by_row_overview.png generated!')
-
-    def _generate_bar_plot_by_percentage(self):
-        # parameters
-        TITLE = 'Null Distribution by Row Overview'
-        X_LABEL = 'Null Per Row'
-        Y_LABEL = 'Percentage of Rows'  # Update the y-axis label
-        CONTENT_SIZE_LIMIT = 20
-        MAX_WIDTH = 25
-        FIG_NAME = 'rel_null_distribution_by_row_overview.png'
-
-        # Use a style for the plot
-        plt.style.use('ggplot')
-
-        content = self._row_null_distribution_snapshot.content
-
-        # Sort the dictionary by key
-        content = dict(sorted(content.items()))
-
-        # calculate average value
-        total_nulls = sum(k * v for k, v in content.items())
-        total_rows = sum(content.values())
-        average_value = total_nulls / total_rows
-
-        # Create lists of keys and values
-        x = list(content.keys())
-        total_rows = sum(content.values())
-        y = [value/total_rows * 100 for value in content.values()]  # Convert y values to percentages
-
-        # Create a color map
-        cmap = plt.get_cmap('viridis')
-
-        # Create a bar chart with color map
-        bars = plt.bar(x, y, color=cmap(np.linspace(0, 1, len(y))))
-
-        # Label the axes
-        plt.xlabel(X_LABEL)
-        plt.ylabel(Y_LABEL)
-
-        # Add a title
-        plt.title(TITLE)
-
-        # Add a vertical line at the average value
-        plt.axvline(average_value, color='r', linestyle='--', label=f'Average: {average_value:.2f}')
-        plt.legend()  # Display the legend to show what the vertical line represents
-
-        # Add data labels on top of the bars
-        if len(content) <= CONTENT_SIZE_LIMIT and max(content) - min(content) <= MAX_WIDTH:
-            for bar in bars:
-                yval = bar.get_height()
-                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}%', va='bottom', ha='center') # Add percentage sign to the label
+                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}{suffix}', va='bottom', ha='center') # Add percentage sign to the label
 
         # Ensure x-axis only displays integer values
         plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
         
-        # Format the y-tick labels to display percentages
-        plt.gca().yaxis.set_major_formatter(ticker.PercentFormatter())
+        if relative:
+            # Format the y-tick labels to display percentages
+            plt.gca().yaxis.set_major_formatter(ticker.PercentFormatter())
 
         # Save the plot to a PNG file with high resolution
-        plt.savefig(os.path.join(self._base_result_filepath, FIG_NAME), dpi=300)
+        plt.savefig(os.path.join(self._base_result_filepath, fig_name), dpi=300)
         plt.close()
-        self._logger.info('rel_null_distribution_by_row_overview.png generated!')
+
