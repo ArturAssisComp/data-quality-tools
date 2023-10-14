@@ -1,6 +1,7 @@
 
 import logging
 import json
+import os
 
 from logger.utils import get_custom_logger_name
 import pandas as pd
@@ -37,4 +38,12 @@ class FileOperations:
                 json.dump(content, f)
         except Exception as e:
             self._logger.error(f'Cannot save the file \'{filename}\' as json: {e}')
+            raise
+
+    def create_directory(self, path:str):
+        try:
+            if not os.path.isdir(path):
+                os.makedirs(path)
+        except Exception as e:
+            logger.error(f'Not able to create directories for {os.path.basename(path)} path: {e}')
             raise
