@@ -47,3 +47,61 @@ class FileOperations:
         except Exception as e:
             logger.error(f'Not able to create directories for {os.path.basename(path)} path: {e}')
             raise
+    
+    def loop_through_dataset(self, dataset:list[str], processing_method):
+        """
+        Iterates through a list of dataset paths, processing each file or directory.
+
+        This method is designed to process a dataset comprising a mix of individual
+        files and directories. Directories are recursively searched for `.csv` files
+        to process. Each found file or directory is processed using the provided
+        `processing_method`.
+
+        Parameters:
+        -----------
+        dataset : list[str]
+            A list containing paths to individual files or directories. Directories
+            are recursively searched for `.csv` files.
+
+        processing_method : callable
+            The processing method to apply to each file. The method should accept two
+            parameters: the file path (str) and the dataframe (DataFrame) read from
+            the file.
+
+        Examples:
+        ---------
+        >>> def sample_processing(file_path, df):
+        ...     print(f"Processed {file_path} with {len(df)} rows.")
+        ...
+        >>> obj.loop_through_dataset(['./data/sample.csv', './data/folder'], sample_processing)
+
+        Notes:
+        ------
+        - Assumes that all files in the provided directories with the `.csv` extension
+        are valid and meant to be processed.
+        - The method uses the absolute path for both files and directories.
+
+        """
+        for file_or_dir in dataset:
+            file_or_dir = os.path.abspath(file_or_dir)
+            if os.path.isfile(file_or_dir):
+                self._process_file(file_or_dir, processing_method)
+            elif os.path.isdir(file_or_dir):
+                self._process_directory(file_or_dir, processing_method)
+            else:
+                self._logger.warning(f"Invalid path: {file_or_dir}. Neither a file nor a directory.")
+
+
+
+    def _process_directory(self, directory: str, processing_method):
+        self._logger.info(f'Scanning dir: \'{directory}\'')
+        for dirpath, _, filenames in os.walk(directory):
+            for filename in filenames:
+                if filename.endswith((".csv", ".CSV")):
+                    full_path = os.path.join(dirpath, filename)
+                    self._process_file(full_path, processing_method)
+
+    def _process_file(self, full_path:str, df_processing_method):
+        self._logger.info(f'Processing file {full_path}')
+        df = self.read_csv(full_path)
+        df_processing_method(full_path, df)

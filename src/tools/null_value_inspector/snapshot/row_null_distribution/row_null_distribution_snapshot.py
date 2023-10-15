@@ -21,14 +21,14 @@ SNAPSHOT_FILE_NAME = ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_
 
 class RowNullDistributionSnapshot:
     _logger:logging.Logger
-    _fileOperations:FileOperations
+    _file_operations:FileOperations
     _row_null_distribution_snapshot:model.RowNullDistributionSnapshotModel
     _state:SNAPSHOT_STATE
     _documentation:Documentation
 
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         self._logger = logger
-        self._fileOperations = fileOperations
+        self._file_operations = fileOperations
         self._state = 'initial'
 
     def _set_state(self):
@@ -52,7 +52,7 @@ class RowNullDistributionSnapshot:
         self._reset()
         self._logger.info('Creating Row Null Distribution Snapshot')
         df_processing_method = self.process_dataframe_to_row_null_distribution_snapshot
-        self._loop_through_dataset(dataset, df_processing_method)
+        self._file_operations.loop_through_dataset(dataset, df_processing_method)
         self._save_snapshot_to_json(snapshot_path)
 
     def _save_snapshot_to_json(self, snapshot_path:str):
@@ -60,7 +60,7 @@ class RowNullDistributionSnapshot:
         output_file = os.path.join(snapshot_path, SNAPSHOT_FILE_NAME)
 
         try:
-            self._fileOperations.to_json(output_file, self._row_null_distribution_snapshot.model_dump())
+            self._file_operations.to_json(output_file, self._row_null_distribution_snapshot.model_dump())
             self._logger.info(f'\'{os.path.basename(output_file)}\' created!')
         except Exception as e:
             self._logger.error(f'Error while creating snapshot json: {e}')
@@ -126,27 +126,4 @@ class RowNullDistributionSnapshot:
             logger.warning(f'SKIPPED! X')
 
         
-    # TODO extract the following methods in the future for other snapshots. Refactor them to the class FileOperations.
 
-    def _loop_through_dataset(self, dataset:list[str], df_processing_method):
-        for file_or_dir in dataset:
-            file_or_dir = os.path.abspath(file_or_dir)
-            if os.path.isdir(file_or_dir):
-                self._process_directory(file_or_dir, df_processing_method)
-            else:
-                self._process_file(file_or_dir, df_processing_method)
-    
-
-
-    def _process_directory(self, directory: str, df_processing_method):
-        self._logger.info(f'Scanning dir: \'{directory}\'')
-        for dirpath, _, filenames in os.walk(directory):
-            for filename in filenames:
-                if filename.endswith(".csv"):
-                    full_path = os.path.join(dirpath, filename)
-                    self._process_file(full_path, df_processing_method)
-
-    def _process_file(self, full_path:str, df_processing_method):
-        self._logger.info(f'Processing file {full_path}')
-        df = self._fileOperations.read_csv(full_path)
-        df_processing_method(full_path, df)

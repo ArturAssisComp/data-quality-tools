@@ -54,8 +54,6 @@ class StatisticalSummaryOverviewGenerator:
         # standard deviation nulls per row
         std_deviation_nulls_per_row = self._create_std_deviation_nulls_per_row(distribution_by_row)
 
-        # TODO average nulls per column
-        # TODO std deviation nulls per columns
 
         statistical_summary = {
             'general_summary':general_summary,
