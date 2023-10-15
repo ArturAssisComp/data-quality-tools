@@ -34,10 +34,6 @@ class Manager:
 
         self._process_tool_request()
 
-        # TODO receive manager response from each tool
-        # TODO create user response from manager response
-
-
 
     def _process_tool_request(self):
         self.tool_class().work_on(self.tool_arguments)

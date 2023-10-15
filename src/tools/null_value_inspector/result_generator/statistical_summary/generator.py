@@ -54,8 +54,6 @@ class StatisticalSummaryOverviewGenerator:
         # standard deviation nulls per row
         std_deviation_nulls_per_row = self._create_std_deviation_nulls_per_row(distribution_by_row)
 
-        # TODO average nulls per column
-        # TODO std deviation nulls per columns
 
         statistical_summary = {
             'general_summary':general_summary,
@@ -77,20 +75,16 @@ class StatisticalSummaryOverviewGenerator:
 
 
     def _generate_pdf_report(self, data:dict, output_filename="report.pdf"):
-        if data['general_summary']['total_cells']:
-            # Plotting data
-            labels = 'Total Nulls', 'Not Null'
-            sizes = [data['general_summary']['total_nulls'], data['general_summary']['total_cells'] - data['general_summary']['total_rows']]
-            colors = ['red', 'green']
-
-            _, ax1 = plt.subplots()
-            ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-            ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-            plt.title("Nulls Distribution")
-            plt.savefig("pie_chart.png")
-
         # Create PDF using reportlab
         c = canvas.Canvas(output_filename, pagesize=landscape(letter))
+        self._write_summary(c, data)
+        if data['general_summary']['total_cells']:
+            self._generate_pie_chart(c, data['general_summary']['total_nulls'], data['general_summary']['total_cells'])
+        c.showPage()
+        c.save()
+        self._logger.info('report.pdf generated!')
+    
+    def _write_summary(self, c:canvas.Canvas, data:dict):
         c.drawString(1 * inch, 7.5 * inch, "General Summary")
         c.drawString(1 * inch, 7 * inch, f"Total Rows: {data['general_summary']['total_rows']}")
         c.drawString(1 * inch, 6.8 * inch, f"Total Nulls: {data['general_summary']['total_nulls']}")
@@ -99,11 +93,18 @@ class StatisticalSummaryOverviewGenerator:
         c.drawString(1 * inch, 6.2 * inch, f"Average Nulls Per Row: {data['average_nulls_per_row']}")
         c.drawString(1 * inch, 6 * inch, f"Std Deviation Nulls Per Row: {data['std_deviation_nulls_per_row']}")
 
-        if data['general_summary']['total_cells']:
-            c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
-        c.showPage()
-        c.save()
-        self._logger.info('report.pdf generated!')
+    def _generate_pie_chart(self, c:canvas.Canvas, total_nulls:int, total_cells:int):
+        # Plotting data
+        labels = 'Total Nulls', 'Not Null'
+        sizes = [total_nulls, total_cells - total_nulls]
+        colors = ['red', 'green']
+
+        _, ax1 = plt.subplots()
+        ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+        ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        plt.title("Nulls Distribution")
+        plt.savefig("pie_chart.png")
+        c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
 
     def _create_general_summary(self, distribution_by_row:dict[int, int]):
         total_rows = sum(distribution_by_row.values())
