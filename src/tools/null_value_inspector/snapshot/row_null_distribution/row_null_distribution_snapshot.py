@@ -66,31 +66,37 @@ class RowNullDistributionSnapshot:
             self._logger.error(f'Error while creating snapshot json: {e}')
             raise
 
-    # TODO refactor method _file_will_be_processed
     def _file_will_be_processed(self, documentation:Documentation, state:SNAPSHOT_STATE, df:pd.DataFrame):
-        file_will_be_processed:bool = True
         match state:
             case 'initial':
                 logger.error('Inconsistent state. Should be free-mode or strict-mode')
                 raise RuntimeError
             case 'strict-mode':
-                if documentation.column:
-                    columns = set(documentation.column)
-                    df_columns = set(df.columns)
-                    if columns != df_columns:
-                        file_will_be_processed = False
-                        more = df_columns - columns
-                        less = columns - df_columns
-
-                        more_str = f"+ {more}" if more else ""
-                        less_str = f"- {less}" if less else ""
-
-                        if more_str or less_str:
-                            logger.warning(f'Invalid columns: {more_str} {less_str}')
-                else:
-                    logger.error('Inconsistent documentation')
-                    raise RuntimeError
+                return self._file_will_be_processed_strict_mode(documentation, df)
+        return True
+    
+    def _file_will_be_processed_strict_mode(self, documentation:Documentation, df:pd.DataFrame):
+        file_will_be_processed:bool = True
+        if documentation.column:
+            columns = set(documentation.column)
+            df_columns = set(df.columns)
+            if columns != df_columns:
+                file_will_be_processed = False
+                self._log_difference_column_set(df_columns, columns)
+        else:
+            logger.error('Inconsistent documentation')
+            raise RuntimeError
         return file_will_be_processed
+    
+    def _log_difference_column_set(self, c1:set, c2:set):
+        more = c1 -c2 
+        less = c2 - c1 
+
+        more_str = f"+ {more}" if more else ""
+        less_str = f"- {less}" if less else ""
+
+        if more_str or less_str:
+            logger.warning(f'Invalid columns: {more_str} {less_str}')
 
 
     def process_dataframe_to_row_null_distribution_snapshot(self, file_path: str, df: pd.DataFrame, documentation:Documentation|None=None, state:SNAPSHOT_STATE|None=None):
