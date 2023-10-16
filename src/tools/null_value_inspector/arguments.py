@@ -12,6 +12,22 @@ def add_arguments(tool_subparser:ArgumentParser):
     )
 
     help_text = (
+        "Format: JSON | "
+        "Description: Multiple metrics that will help assessing the quality of the data in analysis; | "
+        "Snapshot: 'row_null_distribution_snapshot', 'column_null_count_snapshot' | "
+        "Insight: Statistical insights"
+    )
+
+    null_value_inspector_group.add_argument(
+        '--statistical-summary-overview',
+        '--ss',
+        '-n0',
+        action='store_true',
+        default=False,
+        help=help_text
+    )
+
+    help_text = (
         "Format: Bar Chart | "
         "Description: Visualizes row counts by null values | "
         "Axes: X = Null values/row, Y = Row count | "
@@ -22,22 +38,6 @@ def add_arguments(tool_subparser:ArgumentParser):
     null_value_inspector_group.add_argument(
         '--null-distribution-by-row-overview',
         '--ndbro',
-        '-n0',
-        action='store_true',
-        default=False,
-        help=help_text
-    )
-
-    help_text = (
-        "Format: JSON | "
-        "Description: Multiple metrics that will help assessing the quality of the data in analysis; | "
-        "Snapshot: 'row_null_distribution_snapshot', 'column_null_count_snapshot' | "
-        "Insight: Statistical insights"
-    )
-
-    null_value_inspector_group.add_argument(
-        '--statistical-summary-overview',
-        '--ss',
         '-n1',
         action='store_true',
         default=False,

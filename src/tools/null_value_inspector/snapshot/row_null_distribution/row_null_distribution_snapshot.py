@@ -14,11 +14,13 @@ import tools.null_value_inspector.snapshot.row_null_distribution.model.model as 
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
+# TODO 1 - add 'subset-mode' here
 SNAPSHOT_STATE = Literal['initial', 'free-mode', 'strict-mode']
 
 SNAPSHOT_FILE_NAME = ''.join([CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot, '.json'])
 
 
+# TODO create a base class for snapshot to make it easier to create new snapshots
 class RowNullDistributionSnapshot:
     _logger:logging.Logger
     _file_operations:FileOperations
@@ -35,6 +37,7 @@ class RowNullDistributionSnapshot:
         if self._documentation.column is None:
             self._state = 'free-mode'
             self._logger.warning('Executing in FREE MODE')
+            # TODO  2- add elif for is_subset_flag
         else:
             self._state = 'strict-mode'
             self._logger.info('Executing in STRICT MODE')
@@ -76,6 +79,7 @@ class RowNullDistributionSnapshot:
         return True
     
     def _file_will_be_processed_strict_mode(self, documentation:Documentation, df:pd.DataFrame):
+        ''' Check if the file will be processed if the state is strict-mode '''
         file_will_be_processed:bool = True
         if documentation.column:
             columns = set(documentation.column)
@@ -115,6 +119,7 @@ class RowNullDistributionSnapshot:
 
         if self._file_will_be_processed(documentation, state, df):
             try:
+                # TODO extract this as function 
                 self._row_null_distribution_snapshot.files.append(file_path)
                 for num_of_nulls in df.isnull().sum(axis=1):
                     self._row_null_distribution_snapshot.content[num_of_nulls] = self._row_null_distribution_snapshot.content.get(num_of_nulls, 0) + 1
