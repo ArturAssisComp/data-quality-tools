@@ -1,15 +1,14 @@
 from pydantic import BaseModel, field_validator
-from typing import Literal
+import tools.null_value_inspector.snapshot.row_null_distribution.types as types
 
 
-ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE:Literal['row_null_distribution_snapshot'] = 'row_null_distribution_snapshot'
 
 
 class RowNullDistributionSnapshotModel(BaseModel):
-    type:Literal['row_null_distribution_snapshot'] = ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE
+    type:types.RowNullDistributionSnapshot = 'row_null_distribution_snapshot' 
     files:list[str] = list()
     content:dict[int, int]
-    state:Literal['initial', 'free-mode', 'strict-mode'] = 'initial'
+    state:types.State = 'initial'
     num_of_columns:int|None = None
 
     @field_validator('content')
