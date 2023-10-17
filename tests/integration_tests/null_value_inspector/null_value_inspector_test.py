@@ -30,12 +30,10 @@ class TestNullValueInspector:
             "type": "row_null_distribution_snapshot", 
             "content": {"0": 10, "1": 6, "2":1, "3": 1, "4": 1}, 
             "state": "free-mode", 
-            "num_of_columns": None
         }
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "free-mode", 
-            "num_of_columns": 4, 
             "content": {"A": 3, "B": 8, "C": 3, "D": 1}
         }
 
@@ -51,12 +49,10 @@ class TestNullValueInspector:
             "type": "row_null_distribution_snapshot", 
             "content": {"0": 1, "1": 1}, 
             "state": "strict-mode", 
-            "num_of_columns": 2 
         }
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "strict-mode", 
-            "num_of_columns": 2, 
             "content": {"A": 0, "B": 1}
         }
         clean_folder(base_dir)
@@ -71,12 +67,10 @@ class TestNullValueInspector:
             "type": "row_null_distribution_snapshot", 
             "content": {"0": 13, "1": 4, "2":2}, 
             "state": "subset-mode", 
-            "num_of_columns": 2 
         }
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "subset-mode", 
-            "num_of_columns": 2, 
             "content": {"A": 3, "C": 5}
         }
         clean_folder(base_dir)

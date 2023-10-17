@@ -45,19 +45,14 @@ class BaseSnapshot:
             if self._documentation.column is None:
                 self._logger.error('Invalid documentation for subset-mode: columns expected')
                 raise RuntimeError("Invalid documentation")
-            self._set_num_of_columns(len(self._documentation.column))
         elif self._documentation.column is None:
             self._state = 'free-mode'
             self._logger.warning('Executing in FREE MODE')
         else:
             self._state = 'strict-mode'
             self._logger.info('Executing in STRICT MODE')
-            self._set_num_of_columns(len(self._documentation.column))
         self._snapshot_model.state = self._state
     
-    def _set_num_of_columns(self, num_of_columns:int):
-        # create a base model for snapshot model
-        self._snapshot_model.num_of_columns = num_of_columns
     
 
     def _reset_snapshot_model(self):

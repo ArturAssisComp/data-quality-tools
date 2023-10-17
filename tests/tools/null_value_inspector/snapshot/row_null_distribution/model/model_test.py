@@ -45,12 +45,11 @@ class TestRowNullDistributionSnapshotModel:
     def test_row_null_distribution_snapshot(self, _id, input_dict:dict, isValid:bool):
         if isValid:
             result = RowNullDistributionSnapshotModel(**input_dict)
-            assert len(result.model_dump()) == 5
+            assert len(result.model_dump()) == 4
             assert result.type == ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE
             assert set(input_dict['files']) == set(result.files)
             assert input_dict['content'] == result.content
             assert result.state == 'initial'
-            assert result.num_of_columns == None
         else:
             with pytest.raises(pydantic.ValidationError):
                 RowNullDistributionSnapshotModel(**input_dict)
@@ -66,7 +65,6 @@ class TestRowNullDistributionSnapshotModel:
             'files':['file1'],
             'content':{0:2, 1:4}, # 2 rows with 0 nulls, and 4 rows with 1 null
             'state':'initial',
-            'num_of_columns':None,
         }
 
     def test_update_the_content(self):
@@ -75,14 +73,12 @@ class TestRowNullDistributionSnapshotModel:
             'files':['file1'],
             'content':{0:2, 1:4},
             'state':'initial',
-            'num_of_columns':None,
         })
         assert result.model_dump() == {
             'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
             'files':['file1'],
             'content':{0:2, 1:4}, # 2 rows with 0 nulls, and 4 rows with 1 null
             'state':'initial',
-            'num_of_columns':None,
         }
         result.content[0] += 1
         result.content[34] = 12
@@ -92,7 +88,6 @@ class TestRowNullDistributionSnapshotModel:
             'files':['file1'],
             'content':{0:3, 1:4, 34:12}, # 2 rows with 0 nulls, and 4 rows with 1 null
             'state':'initial',
-            'num_of_columns':None,
         }
     
 class TestGetBasicInstance:
@@ -103,7 +98,6 @@ class TestGetBasicInstance:
             'files':[],
             'content':dict(),
             'state':'initial',
-            'num_of_columns':None,
         }
         basic_instance.content = dict()
         assert basic_instance.model_dump() == {
@@ -111,7 +105,6 @@ class TestGetBasicInstance:
             'files':[],
             'content':dict(),
             'state':'initial',
-            'num_of_columns':None,
         }
         basic_instance.files.append('file1')
         basic_instance.content[0] = 1
@@ -121,5 +114,4 @@ class TestGetBasicInstance:
             'files':['file1'],
             'content':{0:1, 10:2},
             'state':'initial',
-            'num_of_columns':None,
         }
