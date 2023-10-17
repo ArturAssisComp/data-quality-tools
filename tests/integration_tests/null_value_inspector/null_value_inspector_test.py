@@ -35,7 +35,7 @@ class TestNullValueInspector:
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "free-mode", 
-            "num_of_columns": None, 
+            "num_of_columns": 4, 
             "content": {"A": 3, "B": 8, "C": 3, "D": 1}
         }
 
