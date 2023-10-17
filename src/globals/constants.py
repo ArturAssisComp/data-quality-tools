@@ -5,6 +5,7 @@ class CONSTANTS(Immutable):
         results = 'results'
         snapshot = 'snapshots'
         row_null_distribution_snapshot='row-null-distribution-snapshot'
+        log_filename = 'data-quality-tools.log'
     class Logger(Immutable):
         class Formatters(Immutable):
             basic_log_formatter = {

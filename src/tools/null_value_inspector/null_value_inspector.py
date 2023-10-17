@@ -13,7 +13,7 @@ from tools.null_value_inspector.result_generator.null_distribution_by_row.genera
 from tools.null_value_inspector.result_generator.statistical_summary.generator import StatisticalSummaryOverviewGenerator
 
 # snapshots
-from tools.null_value_inspector.snapshot.row_null_distribution.row_null_distribution_snapshot import SNAPSHOT_FILE_NAME, RowNullDistributionSnapshot
+from tools.null_value_inspector.snapshot.row_null_distribution.row_null_distribution_snapshot import RowNullDistributionSnapshot
 from utils.file_operations import FileOperations
 
 logger = logging.getLogger(get_custom_logger_name(__name__))
@@ -65,8 +65,9 @@ class NullValueInspector(BaseToolClass):
         self._file_operations.create_directory(self._base_snapshot_path)
         log_header(logger, 'Initializing Snapshots')
         if self._row_null_distribution_snapshot_is_necessary(tool_arguments):
-            RowNullDistributionSnapshot().create_row_null_distribution_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
-            self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, SNAPSHOT_FILE_NAME)
+            rowNullDistributionSnapshot = RowNullDistributionSnapshot()
+            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowNullDistributionSnapshot.get_filename())
 
         log_footer(logger, 'Snapshots Finished    ')
 

@@ -105,6 +105,7 @@ class StatisticalSummaryOverviewGenerator:
         plt.title("Nulls Distribution")
         plt.savefig("pie_chart.png")
         c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
+        os.remove('pie_chart.png')
 
     def _create_general_summary(self, distribution_by_row:dict[int, int]):
         total_rows = sum(distribution_by_row.values())

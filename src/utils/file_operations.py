@@ -103,5 +103,8 @@ class FileOperations:
 
     def _process_file(self, full_path:str, df_processing_method):
         self._logger.info(f'Processing file {full_path}')
-        df = self.read_csv(full_path)
-        df_processing_method(full_path, df)
+        try:
+            df = self.read_csv(full_path)
+            df_processing_method(full_path, df)
+        except:
+            self._logger.error('ERROR! X')
