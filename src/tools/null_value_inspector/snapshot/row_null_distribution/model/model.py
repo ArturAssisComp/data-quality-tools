@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-import tools.null_value_inspector.snapshot.row_null_distribution.types as types
+import tools.null_value_inspector.snapshot.types as types
 
 
 

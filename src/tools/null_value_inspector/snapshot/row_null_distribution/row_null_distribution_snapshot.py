@@ -6,7 +6,7 @@ from globals.constants import CONSTANTS
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
-import tools.null_value_inspector.snapshot.row_null_distribution.types as types
+import tools.null_value_inspector.snapshot.types as types
 import pandas as pd
 import os
 import tools.null_value_inspector.snapshot.row_null_distribution.model.model as model 

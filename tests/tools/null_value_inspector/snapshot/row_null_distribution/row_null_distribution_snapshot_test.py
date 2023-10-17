@@ -8,7 +8,7 @@ from tools.null_value_inspector.snapshot.row_null_distribution.row_null_distribu
 from utils.file_operations import FileOperations
 import tools.null_value_inspector.snapshot.row_null_distribution.model.model as model 
 from tools.null_value_inspector.model.documentation import Documentation
-import tools.null_value_inspector.snapshot.row_null_distribution.types as types 
+import tools.null_value_inspector.snapshot.types as types 
 
 
 
