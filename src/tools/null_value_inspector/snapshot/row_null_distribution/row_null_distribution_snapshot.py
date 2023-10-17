@@ -23,10 +23,8 @@ class RowNullDistributionSnapshot(BaseSnapshot):
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''
         self._snapshot_model = model.RowNullDistributionSnapshotModel.get_basic_instance()
-        self._snapshot_model.content = dict()
 
-    def _perform_specific_processing(self, file_path:str, df:pd.DataFrame, snapshot:model.RowNullDistributionSnapshotModel, state:types.State, documentation:Documentation):
-        snapshot.files.append(file_path)
+    def _perform_specific_processing(self, df:pd.DataFrame, snapshot:model.RowNullDistributionSnapshotModel, state:types.State, documentation:Documentation):
         if state == 'subset-mode':
             if documentation.column:
                 missing_columns = set(documentation.column) - set(df.columns)

@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import BaseModel
+from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
 
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
@@ -20,7 +20,7 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 class BaseSnapshot:
     _logger:logging.Logger
     _file_operations:FileOperations
-    _snapshot_model:BaseModel
+    _snapshot_model:BaseSnapshotModel
     _state:types.State
     _documentation:Documentation
     _snapshot_name:str
@@ -87,7 +87,7 @@ class BaseSnapshot:
     def _file_will_be_processed(self, documentation:Documentation, state:types.State, df:pd.DataFrame):
         match state:
             case 'initial':
-                logger.error('Inconsistent state. Should be free-mode or strict-mode')
+                self._logger.error('Inconsistent state. Should be free-mode or strict-mode')
                 raise RuntimeError
             case 'strict-mode':
                 return self._file_will_be_processed_strict_mode(documentation, df)
@@ -103,7 +103,7 @@ class BaseSnapshot:
                 file_will_be_processed = False
                 self._log_difference_column_set(df_columns, columns)
         else:
-            logger.error('Inconsistent documentation')
+            self._logger.error('Inconsistent documentation')
             raise RuntimeError
         return file_will_be_processed
     
@@ -115,10 +115,10 @@ class BaseSnapshot:
         less_str = f"- {less}" if less else ""
 
         if more_str or less_str:
-            logger.warning(f'Invalid columns: {more_str} {less_str}')
+            self._logger.warning(f'Invalid columns: {more_str} {less_str}')
 
 
-    def process_dataframe(self, file_path: str, df: pd.DataFrame, snapshot:BaseModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):
+    def process_dataframe(self, file_path: str, df: pd.DataFrame, snapshot:BaseSnapshotModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):
         """
         Process a dataframe to extract snapshot data.
 
@@ -133,15 +133,16 @@ class BaseSnapshot:
 
         if self._file_will_be_processed(documentation, state, df):
             try:
-                self._perform_specific_processing(file_path, df, snapshot, state, documentation)
-                logger.info(f'OK! ✔️ ')
+                self._perform_specific_processing(df, snapshot, state, documentation)
+                snapshot.files.append(file_path)
+                self._logger.info(f'OK! ✔️ ')
 
             except Exception as e:
                 self._logger.error(f'Error while processing the file ({file_path}): {e}')
         else:
-            logger.warning(f'SKIPPED! X')
+            self._logger.warning(f'SKIPPED! X')
 
-    def _perform_specific_processing(self, file_path:str, df:pd.DataFrame, snapshot:BaseModel, state:types.State, documentation:Documentation):
+    def _perform_specific_processing(self, df:pd.DataFrame, snapshot:BaseSnapshotModel, state:types.State, documentation:Documentation):
         raise NotImplementedError('specific processing')
 
 
