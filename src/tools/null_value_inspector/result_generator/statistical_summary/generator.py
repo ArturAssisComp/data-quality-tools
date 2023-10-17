@@ -25,7 +25,7 @@ class StatisticalSummaryOverviewGenerator:
         self._logger = logger
         self._fileOperations = fileOperations
     
-    def generate_overview(self, row_null_distribution_snapshot_filepath:str, base_result_filepath:str, documentation:Documentation):
+    def generate_overview(self, row_null_distribution_snapshot_filepath:str, column_null_count_snapshot_filepath:str, base_result_filepath:str, documentation:Documentation):
         self._logger.info('Creating overview')
         self._row_null_distribution_snapshot = RowNullDistributionSnapshotModel(** self._fileOperations.read_Json(row_null_distribution_snapshot_filepath))
         self._row_null_distribution_snapshot_filepath = row_null_distribution_snapshot_filepath
@@ -105,6 +105,7 @@ class StatisticalSummaryOverviewGenerator:
         plt.title("Nulls Distribution")
         plt.savefig("pie_chart.png")
         c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
+        os.remove('pie_chart.png')
 
     def _create_general_summary(self, distribution_by_row:dict[int, int]):
         total_rows = sum(distribution_by_row.values())

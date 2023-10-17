@@ -1,0 +1,9 @@
+{
+	"column":[
+
+		"A",
+
+		"C"
+	],
+	"is_subset_mode":true
+}

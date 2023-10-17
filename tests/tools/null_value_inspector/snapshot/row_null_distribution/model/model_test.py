@@ -95,31 +95,31 @@ class TestRowNullDistributionSnapshotModel:
             'num_of_columns':None,
         }
     
-    class TestGetBasicInstance:
-        def test_manipulate_basic_instance(self):
-            basic_instance = RowNullDistributionSnapshotModel.get_basic_instance()
-            assert basic_instance.model_dump() == {
-                'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
-                'files':[],
-                'content':{0:0},
-                'state':'initial',
-                'num_of_columns':None,
-            }
-            basic_instance.content = dict()
-            assert basic_instance.model_dump() == {
-                'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
-                'files':[],
-                'content':{},
-                'state':'initial',
-                'num_of_columns':None,
-            }
-            basic_instance.files.append('file1')
-            basic_instance.content[0] = 1
-            basic_instance.content[10] = 2
-            assert basic_instance.model_dump() == {
-                'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
-                'files':['file1'],
-                'content':{0:1, 10:2},
-                'state':'initial',
-                'num_of_columns':None,
-            }
+class TestGetBasicInstance:
+    def test_manipulate_basic_instance(self):
+        basic_instance = RowNullDistributionSnapshotModel.get_basic_instance()
+        assert basic_instance.model_dump() == {
+            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
+            'files':[],
+            'content':dict(),
+            'state':'initial',
+            'num_of_columns':None,
+        }
+        basic_instance.content = dict()
+        assert basic_instance.model_dump() == {
+            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
+            'files':[],
+            'content':dict(),
+            'state':'initial',
+            'num_of_columns':None,
+        }
+        basic_instance.files.append('file1')
+        basic_instance.content[0] = 1
+        basic_instance.content[10] = 2
+        assert basic_instance.model_dump() == {
+            'type':ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE,
+            'files':['file1'],
+            'content':{0:1, 10:2},
+            'state':'initial',
+            'num_of_columns':None,
+        }

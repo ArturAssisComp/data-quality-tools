@@ -8,23 +8,23 @@ from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
 import tools.null_value_inspector.snapshot.types as types
 import pandas as pd
-import tools.null_value_inspector.snapshot.row_null_distribution.model.model as model
+import tools.null_value_inspector.snapshot.column_null_count.model.model as model
 from utils.file_operations import FileOperations 
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
-class RowNullDistributionSnapshot(BaseSnapshot):
+class ColumnNullCountSnapshot(BaseSnapshot):
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         super().__init__(logger=logger, fileOperations=fileOperations)
 
     def _init_snapshot_name(self):
-        self._snapshot_name = CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot
+        self._snapshot_name = CONSTANTS.FilesFoldersNames.column_null_count_snapshot
 
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''
-        self._snapshot_model = model.RowNullDistributionSnapshotModel.get_basic_instance()
+        self._snapshot_model = model.ColumnNullCountSnapshotModel.get_basic_instance()
 
-    def _perform_specific_processing(self, df:pd.DataFrame, snapshot:model.RowNullDistributionSnapshotModel, state:types.State, documentation:Documentation):
+    def _perform_specific_processing(self, df:pd.DataFrame, snapshot:model.ColumnNullCountSnapshotModel, state:types.State, documentation:Documentation):
         if state == 'subset-mode':
             if documentation.column:
                 missing_columns = set(documentation.column) - set(df.columns)
@@ -34,8 +34,8 @@ class RowNullDistributionSnapshot(BaseSnapshot):
             else:
                 raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
 
-        for num_of_nulls in df.isnull().sum(axis=1):
-            snapshot.content[num_of_nulls] = snapshot.content.get(num_of_nulls, 0) + 1
+        for col in df.columns:
+            snapshot.content[col] = snapshot.content.get(col, 0) + int(df[col].isnull().sum())
 
 
         
