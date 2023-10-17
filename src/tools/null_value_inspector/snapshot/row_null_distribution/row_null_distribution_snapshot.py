@@ -112,7 +112,7 @@ class RowNullDistributionSnapshot:
             logger.warning(f'Invalid columns: {more_str} {less_str}')
 
 
-    def process_dataframe(self, file_path: str, df: pd.DataFrame, documentation:Documentation|None=None, state:types.State|None=None):
+    def process_dataframe(self, file_path: str, df: pd.DataFrame, snapshot:model.RowNullDistributionSnapshotModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):
         """
         Process a dataframe to extract row null distribution and save it as a snapshot.
 
@@ -123,10 +123,11 @@ class RowNullDistributionSnapshot:
         """
         documentation = documentation or self._documentation
         state = state or self._state
+        snapshot = snapshot or self._row_null_distribution_snapshot
 
         if self._file_will_be_processed(documentation, state, df):
             try:
-                self._perform_specific_processing(file_path, df)
+                self._perform_specific_processing(file_path, df, snapshot, state, documentation)
                 logger.info(f'OK! ✔️ ')
 
             except Exception as e:
@@ -134,19 +135,19 @@ class RowNullDistributionSnapshot:
         else:
             logger.warning(f'SKIPPED! X')
 
-    def _perform_specific_processing(self, file_path:str, df:pd.DataFrame):
-        self._row_null_distribution_snapshot.files.append(file_path)
-        if self._state == 'subset-mode':
-            if self._documentation.column:
-                missing_columns = set(self._documentation.column) - set(df.columns)
+    def _perform_specific_processing(self, file_path:str, df:pd.DataFrame, snapshot:model.RowNullDistributionSnapshotModel, state:types.State, documentation:Documentation):
+        snapshot.files.append(file_path)
+        if state == 'subset-mode':
+            if documentation.column:
+                missing_columns = set(documentation.column) - set(df.columns)
                 if missing_columns:
                     df = df.assign(**{col:np.nan for col in missing_columns})
-                df = df[self._documentation.column]
+                df = df[documentation.column]
             else:
                 raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
 
         for num_of_nulls in df.isnull().sum(axis=1):
-            self._row_null_distribution_snapshot.content[num_of_nulls] = self._row_null_distribution_snapshot.content.get(num_of_nulls, 0) + 1
+            snapshot.content[num_of_nulls] = snapshot.content.get(num_of_nulls, 0) + 1
 
 
         
