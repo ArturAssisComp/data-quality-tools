@@ -3,6 +3,7 @@ from pydantic import BaseModel, field_validator
     
 class Documentation (BaseModel):
     column:list[str]|None = None
+    is_subset_mode:bool = False
 
 
 
