@@ -1,6 +1,7 @@
 import logging
 import os
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotModel
+from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotModel
 
 from tools.null_value_inspector.model.documentation import Documentation
 from utils.file_operations import FileOperations
@@ -18,7 +19,7 @@ class StatisticalSummaryOverviewGenerator:
     _logger:logging.Logger
     _fileOperations:FileOperations
     _row_null_distribution_snapshot:RowNullDistributionSnapshotModel
-    _row_null_distribution_snapshot_filepath:str
+    _column_null_count_snapshot:ColumnNullCountSnapshotModel
     _base_result_filepath:str
     _documentation:Documentation
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations()):
@@ -28,7 +29,7 @@ class StatisticalSummaryOverviewGenerator:
     def generate_overview(self, row_null_distribution_snapshot_filepath:str, column_null_count_snapshot_filepath:str, base_result_filepath:str, documentation:Documentation):
         self._logger.info('Creating overview')
         self._row_null_distribution_snapshot = RowNullDistributionSnapshotModel(** self._fileOperations.read_Json(row_null_distribution_snapshot_filepath))
-        self._row_null_distribution_snapshot_filepath = row_null_distribution_snapshot_filepath
+        self._column_null_count_snapshot = ColumnNullCountSnapshotModel(** self._fileOperations.read_Json(column_null_count_snapshot_filepath))
         self._base_result_filepath = base_result_filepath
         self._documentation = documentation
         try:
@@ -40,13 +41,11 @@ class StatisticalSummaryOverviewGenerator:
 
     def _generate_statistical_summary(self):
         distribution_by_row = self._row_null_distribution_snapshot.content
+        nulls_per_column = self._column_null_count_snapshot.content
 
-        general_summary = self._create_general_summary(distribution_by_row)
+        general_summary = self._create_general_summary(distribution_by_row, nulls_per_column)
 
-        if general_summary.get('total_columns'):
-            completeness_metric = self._create_completeness_metric(general_summary)
-        else: 
-            completeness_metric = None
+        completeness_metric = self._create_completeness_metric(general_summary)
 
         # average nulls per row
         average_nulls_per_row = self._create_average_nulls_per_row(general_summary)
@@ -92,6 +91,10 @@ class StatisticalSummaryOverviewGenerator:
         c.drawString(1 * inch, 6.4 * inch, f"Min Nulls Per Row: {data['general_summary']['min_nulls_per_row']}")
         c.drawString(1 * inch, 6.2 * inch, f"Average Nulls Per Row: {data['average_nulls_per_row']}")
         c.drawString(1 * inch, 6 * inch, f"Std Deviation Nulls Per Row: {data['std_deviation_nulls_per_row']}")
+        c.drawString(1 * inch, 5.8 * inch, f"Total Columns: {data['general_summary']['total_columns']}")
+        c.drawString(1 * inch, 5.6 * inch, f"Total Nulls Percentage: {data['general_summary']['total_nulls_percentage']}%")
+        c.drawString(1 * inch, 5.4 * inch, f"Completeness Metric: {data['completeness_metric']}%")
+   
 
     def _generate_pie_chart(self, c:canvas.Canvas, total_nulls:int, total_cells:int):
         # Plotting data
@@ -107,22 +110,15 @@ class StatisticalSummaryOverviewGenerator:
         c.drawInlineImage("pie_chart.png", 5*inch, 5*inch, width=3*inch, height=3*inch)
         os.remove('pie_chart.png')
 
-    def _create_general_summary(self, distribution_by_row:dict[int, int]):
+    def _create_general_summary(self, distribution_by_row:dict[int, int], column_null_count:dict[str, int]):
         total_rows = sum(distribution_by_row.values())
         total_nulls = sum(k*v for k, v in distribution_by_row.items())
         max_nulls_per_row = max(distribution_by_row)
         min_nulls_per_row = min(distribution_by_row)
-        if self._documentation.column:
-            column_list = self._documentation.column
-            total_columns = len(self._documentation.column)
-            total_cells = total_rows * total_columns
-            total_nulls_percentage = round(100 * total_nulls / (total_cells), 2)
-        else:
-            column_list = None
-            total_columns = None
-            total_cells = None
-            total_nulls_percentage = None
-
+        column_list = list(column_null_count.keys())
+        total_columns = len(column_list)
+        total_cells = total_rows * total_columns
+        total_nulls_percentage = round(100 * total_nulls / (total_cells), 2)
         return {
             'total_rows': total_rows,
             'total_nulls':total_nulls,

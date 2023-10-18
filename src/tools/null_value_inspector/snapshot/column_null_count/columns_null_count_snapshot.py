@@ -33,7 +33,6 @@ class ColumnNullCountSnapshot(BaseSnapshot):
                 df = df[documentation.column]
             else:
                 raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
-
         for col in df.columns:
             snapshot.content[col] = snapshot.content.get(col, 0) + int(df[col].isnull().sum())
 
