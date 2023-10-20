@@ -43,3 +43,20 @@ def add_arguments(tool_subparser:ArgumentParser):
         default=False,
         help=help_text
     )
+
+    help_text = (
+        "Format: Bar Chart | "
+        "Description: Visualizes nulls by column, ranked from the greatest to the smallest | "
+        "Axes: X = Column name, Y = Null count or Y = Percentage of Nulls  | "
+        "Snapshot: 'column_null_count_snapshot' | "
+        "Insight: identify columns needing attention based on missing data"
+    )
+
+    null_value_inspector_group.add_argument(
+        '--ranked-null-count-by-column-overview',
+        '--rncbco',
+        '-n2',
+        action='store_true',
+        default=False,
+        help=help_text
+    )

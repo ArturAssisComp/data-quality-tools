@@ -6,6 +6,7 @@ class ToolArguments (BaseModel):
     documentation: str = ''
     dataset: list[str]
     output_path: str = ''
+    ranked_null_count_by_column_overview:bool = False
     null_distribution_by_row_overview:bool = False
     statistical_summary_overview:bool = False
 

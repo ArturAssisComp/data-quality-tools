@@ -11,6 +11,7 @@ from logger.utils import log_footer, log_header, get_custom_logger_name
 # tools
 from tools.null_value_inspector.result_generator.null_distribution_by_row.generator import NullDistributionByRowOverviewGenerator
 from tools.null_value_inspector.result_generator.statistical_summary.generator import StatisticalSummaryOverviewGenerator
+from tools.null_value_inspector.result_generator.ranked_null_count_by_column.generator import RankedNullCountByColumnOverviewGenerator
 from utils.file_operations import FileOperations
 
 # snapshots
@@ -78,8 +79,7 @@ class NullValueInspector(BaseToolClass):
         log_footer(logger, 'Snapshots Finished    ')
 
     def _column_null_count_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
-        # TODO add other results that require this snapshot
-        return tool_arguments.statistical_summary_overview
+        return tool_arguments.statistical_summary_overview or tool_arguments.ranked_null_count_by_column_overview
 
     def _row_null_distribution_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
         return tool_arguments.null_distribution_by_row_overview or tool_arguments.statistical_summary_overview
@@ -88,17 +88,35 @@ class NullValueInspector(BaseToolClass):
         self._file_operations.create_directory(self._base_result_path)
         log_header(logger, 'Initializing Results')
         if tool_arguments.statistical_summary_overview:
-            logger.info('Creating summary_overview')
+            overview_name = 'summary_overview'
+            logger.info(f'Creating {overview_name}')
             if not self._snapshot_is_available(self._row_null_distribution_snapshot_path) or not self._snapshot_is_available(self._column_null_count_snapshot_path):
                 logger.error('Invalid row_null_distribution_snapshot or columns_null_count_snapshot')
             else:
-                StatisticalSummaryOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._column_null_count_snapshot_path, self._base_result_path, self._documentation)  # type: ignore
+                try:
+                    StatisticalSummaryOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._column_null_count_snapshot_path, self._base_result_path, self._documentation)  # type: ignore
+                except Exception as e:
+                    logger.error(f'Error while executing {overview_name}: {e}')
         if tool_arguments.null_distribution_by_row_overview:
-            logger.info('Creating null_distribution_by_row_overview')
+            overview_name = 'null_distribution_by_row_overview'
+            logger.info(f'Creating {overview_name}')
             if not self._snapshot_is_available(self._row_null_distribution_snapshot_path):
                 logger.error('Invalid row_null_distribution_snapshot')
             else:
-                NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
+                try:
+                    NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
+                except Exception as e:
+                    logger.error(f'Error while executing {overview_name}: {e}')
+        if tool_arguments.ranked_null_count_by_column_overview:
+            overview_name = 'ranked_null_count_by_column_overview'
+            logger.info(f'Creating {overview_name}')
+            if not self._snapshot_is_available(self._column_null_count_snapshot_path):
+                logger.error('Invalid column_null_count_snapshot')
+            else:
+                try:
+                    RankedNullCountByColumnOverviewGenerator().generate_overview(self._column_null_count_snapshot_path, self._base_result_path) # type: ignore
+                except Exception as e:
+                    logger.error(f'Error while executing {overview_name}: {e}')
         log_footer(logger, 'Results Finished    ')
     
     def _snapshot_is_available(self, snapshot_path:str|None):
