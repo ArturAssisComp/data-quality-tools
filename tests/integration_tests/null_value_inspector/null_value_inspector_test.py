@@ -24,7 +24,7 @@ class TestNullValueInspector:
     def test_free_mode(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
-        os.system('dqt  nvi -n0 -n1')
+        os.system('dqt  nvi -n0 -n1 -n2')
         row_null_distribution_snapshot, column_null_count_snapshot = load_snapshots(base_dir)
         assert row_null_distribution_snapshot == {
             "type": "row_null_distribution_snapshot", 
@@ -43,7 +43,7 @@ class TestNullValueInspector:
     def test_strict_mode(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
-        os.system('dqt --doc ./documentation.txt  nvi -n0 -n1')
+        os.system('dqt --doc ./documentation.txt  nvi -n0 -n1 -n2')
         row_null_distribution_snapshot, column_null_count_snapshot = load_snapshots(base_dir)
         assert row_null_distribution_snapshot == {
             "type": "row_null_distribution_snapshot", 
@@ -61,7 +61,7 @@ class TestNullValueInspector:
     def test_subset_mode(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
-        os.system('dqt --doc ./documentation_subset_mode.txt  nvi -n0 -n1')
+        os.system('dqt --doc ./documentation_subset_mode.txt  nvi -n0 -n1 -n2')
         row_null_distribution_snapshot, column_null_count_snapshot = load_snapshots(base_dir)
         assert row_null_distribution_snapshot == {
             "type": "row_null_distribution_snapshot", 
