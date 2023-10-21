@@ -16,6 +16,6 @@ class ColumnPairNullPatternSnapshotModel(BaseSnapshotModel):
     
     @classmethod
     def get_basic_instance(cls):
-        new_instance = cls(content={'':dict()}, type='column_pair_null_pattern')
+        new_instance = cls(content={'':dict()}, type='column_pair_null_pattern_snapshot')
         new_instance.content = dict()
         return new_instance
