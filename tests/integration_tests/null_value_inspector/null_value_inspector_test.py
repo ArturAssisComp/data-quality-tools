@@ -46,10 +46,10 @@ class TestNullValueInspector:
         assert column_pair_null_pattern_snapshot == {
             'type': 'column_pair_null_pattern_snapshot',
             'content':{
-                'A':{'B':2, 'C':2, 'D':1}, 
-                'B':{'A':2, 'C':3, 'D':1}, 
-                'C':{'A':2, 'B':3, 'D':1}, 
-                'D':{'A':1, 'B':1, 'C':1}
+                'A':{'A':3, 'B':2, 'C':2, 'D':1}, 
+                'B':{'A':2, 'B':8, 'C':3, 'D':1}, 
+                'C':{'A':2, 'B':3, 'C':3, 'D':1}, 
+                'D':{'A':1, 'B':1, 'C':1, 'D':1}
             },
             'state':'free-mode'
         }
@@ -72,10 +72,7 @@ class TestNullValueInspector:
         }
         assert column_pair_null_pattern_snapshot == {
             'type': 'column_pair_null_pattern_snapshot',
-            'content':{
-                'A':{'B':0}, 
-                'B':{'A':0}, 
-            },
+            'content':{'B':{'B':1}},
             'state':'strict-mode'
         }
         clean_folder(base_dir)
@@ -97,8 +94,8 @@ class TestNullValueInspector:
         assert column_pair_null_pattern_snapshot == {
             'type': 'column_pair_null_pattern_snapshot',
             'content':{
-                'A':{'C':2}, 
-                'C':{'A':2}, 
+                'A':{'A':3, 'C':2}, 
+                'C':{'A':2, 'C':5}, 
             },
             'state':'subset-mode'
         }

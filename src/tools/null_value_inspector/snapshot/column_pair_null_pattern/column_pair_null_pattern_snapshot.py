@@ -38,12 +38,14 @@ class ColumnPairNullPatternSnapshot(BaseSnapshot):
         # TODO refactor
         if len(df) > 0:
             for n, col1 in enumerate(df.columns):
-                for i in range(n + 1, len(df.columns)):
+                for i in range(n, len(df.columns)):
                     col2 = df.columns[i]
                     num_of_common_nulls = int((df[[col1, col2]].isna().sum(axis=1) == 2).sum())
-                    self._init_column_pair(col1, col2, snapshot.content)
-                    snapshot.content[col1][col2] += num_of_common_nulls
-                    snapshot.content[col2][col1] += num_of_common_nulls
+                    if num_of_common_nulls > 0:
+                        self._init_column_pair(col1, col2, snapshot.content)
+                        snapshot.content[col1][col2] += num_of_common_nulls
+                        if col1 != col2:
+                            snapshot.content[col2][col1] += num_of_common_nulls
 
     def _init_column_pair(self, col1:str, col2:str, dct:dict):
         if col1 not in dct:
