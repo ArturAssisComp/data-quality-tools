@@ -44,20 +44,20 @@ class TestColumnPairNullPatternSnapshot:
     13	free-mode	one_zero_one_nonzero	one_zero
     '''
     @pytest.mark.parametrize('_, documentation, df_dict, initial_content, final_content', [
-        ('domain test case', Documentation(), {"A":[1, np.nan, 3], "B":[1, np.nan, np.nan], 'C':[2, np.nan, np.nan]}, dict(), {'A':{'B':1, 'C':1}, 'B':{'A':1, 'C':2}, 'C':{'A':1, 'B':2}}),
+        ('domain test case', Documentation(), {"A":[1, np.nan, 3], "B":[1, np.nan, np.nan], 'C':[2, np.nan, np.nan]}, dict(), {'A':{'A':1, 'B':1, 'C':1}, 'B':{'A':1, 'B':2, 'C':2}, 'C':{'A':1, 'B':2, 'C':2}}),
         ('pairwise 1', free_mode, df_dict_only_zero, initial_content_one_with_zero, {'A':{'B':0}, 'B':{'A':0}}),
-        ('pairwise 2', free_mode, df_dict_one_zero_one_nonzero, initial_content_one_zero_one_nonzero, {'A':{'B':13, 'C':0}, 'B':{'A':13, 'C':0}, 'C':{'A':0, 'B':0}}), 
+        ('pairwise 2', free_mode, df_dict_one_zero_one_nonzero, initial_content_one_zero_one_nonzero, {'A':{'A':1, 'B':13, 'C':0}, 'B':{'A':13, 'B':2, 'C':0}, 'C':{'A':0, 'B':0}}), 
         ('pairwise 3', strict_mode, df_dict_only_zero, initial_content_one_zero_one_nonzero, {'A':{'B':12, 'C':0}, 'B':{'A':12, 'C':0}, 'C':{'A':0, 'B':0}}), 
-        ('pairwise 4', strict_mode, df_dict_one_zero_one_nonzero, initial_content_empty, {'A':{'B':1}, 'B':{'A':1}}), 
+        ('pairwise 4', strict_mode, df_dict_one_zero_one_nonzero, initial_content_empty, {'A':{'A':1, 'B':1}, 'B':{'A':1, 'B':2}}), 
         ('pairwise 5', strict_mode, df_dict_empty, initial_content_empty, dict()), 
         ('pairwise 6', strict_mode, df_dict_empty, initial_content_one_with_zero, {'A':{'B':0}, 'B':{'A':0}}), 
-        ('pairwise 7', subset_mode, df_dict_one_zero_one_nonzero, initial_content_empty, {'A':{'C':1}, 'C':{'A':1}}), 
+        ('pairwise 7', subset_mode, df_dict_one_zero_one_nonzero, initial_content_empty, {'A':{'A':1, 'C':1}, 'C':{'A':1, 'C':3}}), 
         ('pairwise 8', subset_mode, df_dict_empty, initial_content_one_with_zero, {'A':{'B':0}, 'B':{'A':0}}), 
         ('pairwise 9', subset_mode, df_dict_empty, initial_content_one_zero_one_nonzero,{'A':{'B':12, 'C':0}, 'B':{'A':12, 'C':0}, 'C':{'A':0, 'B':0}}), 
-        ('pairwise 10', subset_mode, df_dict_only_zero ,initial_content_empty,{'A':{'C':0}, 'C':{'A':0}}), 
+        ('pairwise 10', subset_mode, df_dict_only_zero ,initial_content_empty,{'C':{'C':1}}), 
         ('pairwise 11', free_mode ,df_dict_empty ,initial_content_one_zero_one_nonzero,{'A':{'B':12, 'C':0}, 'B':{'A':12, 'C':0}, 'C':{'A':0, 'B':0}}), 
-        ('pairwise 12', free_mode ,df_dict_only_zero ,initial_content_empty,{'A':{'B':0}, 'B':{'A':0}}), 
-        ('pairwise 13', free_mode ,df_dict_one_zero_one_nonzero ,initial_content_one_with_zero,{'A':{'B':1}, 'B':{'A':1}}),
+        ('pairwise 12', free_mode ,df_dict_only_zero ,initial_content_empty,dict()), 
+        ('pairwise 13', free_mode ,df_dict_one_zero_one_nonzero ,initial_content_one_with_zero,{'A':{'A':1, 'B':1}, 'B':{'A':1, 'B':2}}),
     ])
     def test_process_dataframe(self, _, documentation:Documentation, df_dict:dict, initial_content:dict, final_content:dict):
         mock_logger = Mock(spec=logging.Logger)

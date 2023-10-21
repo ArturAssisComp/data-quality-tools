@@ -60,3 +60,19 @@ def add_arguments(tool_subparser:ArgumentParser):
         default=False,
         help=help_text
     )
+
+    help_text = (
+        "Format: Heatmap | "
+        "Description: Ranks frequent combinations of pairs of columns with nulls | "
+        "Snapshot: 'column_pair_null_pattern_snapshot' | "
+        "Insight: Highlight potential correlation between two columns in terms of null problems"
+    )
+
+    null_value_inspector_group.add_argument(
+        '--null-frequent-pairs-overview',
+        '--nfpo',
+        '-n3',
+        action='store_true',
+        default=False,
+        help=help_text
+    )
