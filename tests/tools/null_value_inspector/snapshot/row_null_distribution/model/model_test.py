@@ -43,9 +43,10 @@ class TestRowNullDistributionSnapshotModel:
             }, True),
     ])
     def test_row_null_distribution_snapshot(self, _id, input_dict:dict, isValid:bool):
+        input_dict['columns'] = []
         if isValid:
             result = RowNullDistributionSnapshotModel(**input_dict)
-            assert len(result.model_dump()) == 4
+            assert len(result.model_dump()) == 5
             assert result.type == ROW_NULL_DISTRIBUTION_SNAPSHOT_TYPE
             assert set(input_dict['files']) == set(result.files)
             assert input_dict['content'] == result.content
@@ -65,6 +66,7 @@ class TestRowNullDistributionSnapshotModel:
             'files':['file1'],
             'content':{0:2, 1:4}, # 2 rows with 0 nulls, and 4 rows with 1 null
             'state':'initial',
+            'columns':[]
         }
 
     def test_update_the_content(self):
@@ -79,6 +81,7 @@ class TestRowNullDistributionSnapshotModel:
             'files':['file1'],
             'content':{0:2, 1:4}, # 2 rows with 0 nulls, and 4 rows with 1 null
             'state':'initial',
+            'columns':[]
         }
         result.content[0] += 1
         result.content[34] = 12
@@ -88,6 +91,7 @@ class TestRowNullDistributionSnapshotModel:
             'files':['file1'],
             'content':{0:3, 1:4, 34:12}, # 2 rows with 0 nulls, and 4 rows with 1 null
             'state':'initial',
+            'columns':[]
         }
     
 class TestGetBasicInstance:
@@ -98,6 +102,7 @@ class TestGetBasicInstance:
             'files':[],
             'content':dict(),
             'state':'initial',
+            'columns':[]
         }
         basic_instance.content = dict()
         assert basic_instance.model_dump() == {
@@ -105,6 +110,7 @@ class TestGetBasicInstance:
             'files':[],
             'content':dict(),
             'state':'initial',
+            'columns':[]
         }
         basic_instance.files.append('file1')
         basic_instance.content[0] = 1
@@ -114,4 +120,5 @@ class TestGetBasicInstance:
             'files':['file1'],
             'content':{0:1, 10:2},
             'state':'initial',
+            'columns':[]
         }

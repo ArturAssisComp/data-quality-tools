@@ -1,4 +1,5 @@
 import logging
+import time
 
 from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
 
@@ -45,12 +46,14 @@ class BaseSnapshot:
             if self._documentation.column is None:
                 self._logger.error('Invalid documentation for subset-mode: columns expected')
                 raise RuntimeError("Invalid documentation")
+            self._snapshot_model.columns = self._documentation.column.copy()
         elif self._documentation.column is None:
             self._state = 'free-mode'
             self._logger.warning('Executing in FREE MODE')
         else:
             self._state = 'strict-mode'
             self._logger.info('Executing in STRICT MODE')
+            self._snapshot_model.columns = self._documentation.column.copy()
         self._snapshot_model.state = self._state
     
     
@@ -128,9 +131,11 @@ class BaseSnapshot:
 
         if self._file_will_be_processed(documentation, state, df):
             try:
+                initial_time = time.time()
                 self._perform_specific_processing(df, snapshot, state, documentation)
                 snapshot.files.append(file_path)
-                self._logger.info(f'OK! ✔️ ')
+                final_time = time.time()
+                self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s)')
 
             except Exception as e:
                 self._logger.error(f'Error while processing the file ({file_path}): {e}')
