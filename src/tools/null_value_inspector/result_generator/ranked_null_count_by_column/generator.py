@@ -1,12 +1,10 @@
 import logging
-import os
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import numpy as np
 
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotModel
 from utils.file_operations import FileOperations
+from utils.plot_operations import PlotOperations
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 2, 'last'))
 
@@ -32,12 +30,14 @@ TITLE = 'Ranked Null Count by Column Overview'
 class RankedNullCountByColumnOverviewGenerator:
     _logger:logging.Logger
     _fileOperations:FileOperations
+    _plot_operations:PlotOperations
     _column_null_count_snapshot:ColumnNullCountSnapshotModel
     _column_null_count_snapshot_filepath:str
     _base_result_filepath:str
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations()):
+    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations = PlotOperations()):
         self._logger = logger
         self._fileOperations = fileOperations
+        self._plot_operations = plot_operations
     
     def generate_overview(self, column_null_count_snapshot_filepath:str, base_result_filepath:str):
         self._logger.info('Creating overview')
@@ -90,53 +90,7 @@ class RankedNullCountByColumnOverviewGenerator:
         
         has_label_on_top = self._should_add_label_on_top(content, relative)
 
-        self._plot_figure(x, y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, settings['fig_name'], relative, settings['suffix'])
+        self._plot_operations.plot_figure(list(range(len(x))), y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, settings['fig_name'], relative, settings['suffix'], self._base_result_filepath, x_labels=x)
 
         self._logger.info(f'{settings["fig_name"]} generated!')
-
-
-    def _plot_figure(self, x:list[str], y:list[float]|list[int], y_label:str, x_label:str, title:str, average_value:float, has_label_on_top:bool, fig_name:str, relative:bool, suffix:str):
-        # Use a style for the plot
-        plt.style.use('ggplot')
-
-        # Create a color map
-        cmap = plt.get_cmap('viridis')
-
-        # Create a bar chart with color map
-        bars = plt.bar(range(len(x)), y, color=cmap(np.linspace(0, 1, len(y))))
-
-        # Label the axes
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-
-        # Add a title
-        plt.title(title)
-
-        # Add a vertical line at the average value
-        plt.axhline(average_value, color='r', linestyle='--', label=f'Average: {average_value:.2f}')
-        plt.legend()  # Display the legend to show what the vertical line represents
-
-
-        # Add data labels on top of the bars
-        if has_label_on_top:
-            for bar in bars:
-                yval = bar.get_height()
-                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}{suffix}', va='bottom', ha='center') # Add percentage sign to the label
-
-        # Adjust x-tick labels to prevent overlapping
-        plt.xticks(range(len(x)), x, rotation=45, ha='right', fontsize=6, fontweight='bold')
-        
-        if relative:
-            # Format the y-tick labels to display percentages
-            plt.gca().yaxis.set_major_formatter(ticker.PercentFormatter())
-
-        # Ensure everything fits
-        plt.tight_layout()
-
-        # Save the plot to a PNG file with high resolution
-        plt.savefig(os.path.join(self._base_result_filepath, fig_name), dpi=300)
-
-
-        plt.close()
-
 
