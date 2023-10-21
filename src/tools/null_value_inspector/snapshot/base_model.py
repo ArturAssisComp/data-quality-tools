@@ -8,6 +8,7 @@ class BaseSnapshotModel(BaseModel):
     type:types.Snapshot  
     files:list[str] = list()
     state:types.State = 'initial'
+    columns:list[str] = list()
 
     
 
