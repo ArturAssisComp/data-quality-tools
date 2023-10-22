@@ -1,5 +1,7 @@
 import logging
 import os
+
+import numpy as np
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotModel
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotModel
 
@@ -50,15 +52,24 @@ class StatisticalSummaryOverviewGenerator:
         # average nulls per row
         average_nulls_per_row = self._create_average_nulls_per_row(general_summary)
 
+        # average nulls per column
+        average_nulls_per_column = self._create_average_nulls_per_column(general_summary)
+
+
         # standard deviation nulls per row
         std_deviation_nulls_per_row = self._create_std_deviation_nulls_per_row(distribution_by_row)
+
+        # standard deviation nulls per column
+        std_deviation_nulls_per_column = self._create_std_deviation_nulls_per_column(list(nulls_per_column.values()))
 
 
         statistical_summary = {
             'general_summary':general_summary,
             'completeness_metric':completeness_metric,
             'average_nulls_per_row':average_nulls_per_row,
+            'average_nulls_per_column':average_nulls_per_column,
             'std_deviation_nulls_per_row':std_deviation_nulls_per_row,
+            'std_deviation_nulls_per_column':std_deviation_nulls_per_column,
         }
 
         # save the result
@@ -84,17 +95,50 @@ class StatisticalSummaryOverviewGenerator:
         self._logger.info('report.pdf generated!')
     
     def _write_summary(self, c:canvas.Canvas, data:dict):
-        c.drawString(1 * inch, 7.5 * inch, "General Summary")
-        c.drawString(1 * inch, 7 * inch, f"Total Rows: {data['general_summary']['total_rows']}")
-        c.drawString(1 * inch, 6.8 * inch, f"Total Nulls: {data['general_summary']['total_nulls']}")
-        c.drawString(1 * inch, 6.6 * inch, f"Max Nulls Per Row: {data['general_summary']['max_nulls_per_row']}")
-        c.drawString(1 * inch, 6.4 * inch, f"Min Nulls Per Row: {data['general_summary']['min_nulls_per_row']}")
-        c.drawString(1 * inch, 6.2 * inch, f"Average Nulls Per Row: {data['average_nulls_per_row']}")
-        c.drawString(1 * inch, 6 * inch, f"Std Deviation Nulls Per Row: {data['std_deviation_nulls_per_row']}")
-        c.drawString(1 * inch, 5.8 * inch, f"Total Columns: {data['general_summary']['total_columns']}")
-        c.drawString(1 * inch, 5.6 * inch, f"Total Nulls Percentage: {data['general_summary']['total_nulls_percentage']}%")
-        c.drawString(1 * inch, 5.4 * inch, f"Completeness Metric: {data['completeness_metric']}%")
-   
+        initial_y = 8
+        # Main Title
+        c.setFont("Helvetica-Bold", 18)
+        c.drawString(1 * inch, initial_y * inch, "Data Quality Report")
+
+        # General Summary Title
+        c.setFont("Helvetica-Bold", 14)
+        initial_y -= 0.5
+        c.drawString(1 * inch, initial_y * inch, "General Summary")
+        
+        # General Summary Details
+        c.setFont("Helvetica", 12)
+        initial_y -= 0.2
+        c.drawString(1 * inch, initial_y * inch, f"Total Rows: {data['general_summary']['total_rows']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Total Nulls: {data['general_summary']['total_nulls']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Max Nulls Per Row: {data['general_summary']['max_nulls_per_row']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Min Nulls Per Row: {data['general_summary']['min_nulls_per_row']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Total Columns: {data['general_summary']['total_columns']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Total Nulls Percentage: {data['general_summary']['total_nulls_percentage']}%")
+        initial_y -= 0.2
+
+        # Statistical Summary Title
+        c.setFont("Helvetica-Bold", 14)
+        initial_y -= 0.3
+        c.drawString(1 * inch, initial_y * inch, "Statistical Summary")
+        
+        # Statistical Summary Details
+        c.setFont("Helvetica", 12)
+        initial_y -= 0.3
+        c.drawString(1 * inch, initial_y * inch, f"Average Nulls Per Row: {data['average_nulls_per_row']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Std Deviation Nulls Per Row: {data['std_deviation_nulls_per_row']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Average Nulls Per Column: {data['average_nulls_per_column']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Std Deviation Nulls Per Column: {data['std_deviation_nulls_per_column']}")
+        initial_y -= 0.2
+        c.drawString(1 * inch,  initial_y * inch, f"Completeness Metric: {data['completeness_metric']}%")
+
 
     def _generate_pie_chart(self, c:canvas.Canvas, total_nulls:int, total_cells:int):
         # Plotting data
@@ -135,6 +179,12 @@ class StatisticalSummaryOverviewGenerator:
 
     def _create_average_nulls_per_row(self, general_summary:dict):
         return round(general_summary['total_nulls'] / general_summary['total_rows'], 2)
+
+    def _create_average_nulls_per_column(self, general_summary:dict):
+        return round(general_summary['total_nulls'] / general_summary['total_columns'], 2)
         
     def _create_std_deviation_nulls_per_row(self, distribution:dict[int, int]):
         return round(std_dev_weighted(distribution), 4)
+
+    def _create_std_deviation_nulls_per_column(self, values:list[int]):
+        return round(np.std(values), 4)
