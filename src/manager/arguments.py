@@ -12,6 +12,9 @@ def add_arguments(manager_group: _ArgumentGroup):
     - --output-path, -o
     """
     manager_group.add_argument("--name", '-n', type=str, default='', help="The name of the query.")
+
+    manager_group.add_argument("--sample", '-s', type=str, default='', help="Specify a sampling strategy for the dataset. Accepts a percentage (e.g., '10%'), a single integer (e.g., '1000' for 1000 rows), or a combination of percentages and integers (e.g., '12%, 1024, 234, 100') to generate multiple samples.")
+
     
     manager_group.add_argument("--description", type=str, default='', help="The description of the query.")
     
