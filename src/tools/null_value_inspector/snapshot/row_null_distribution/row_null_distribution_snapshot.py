@@ -1,7 +1,7 @@
 import logging
 
 import numpy as np
-from globals.constants import CONSTANTS
+from globals.types import SnapshotType
 from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
 
 from logger.utils import get_custom_logger_name
@@ -17,12 +17,10 @@ class RowNullDistributionSnapshot(BaseSnapshot):
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         super().__init__(logger=logger, fileOperations=fileOperations)
 
-    def _init_snapshot_name(self):
-        self._snapshot_name = CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot
     
 
     def _init_snapshot_type(self):
-        self._type = 'row_null_distribution_snapshot'
+        self._type = SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT
 
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''

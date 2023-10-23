@@ -3,6 +3,7 @@ import shutil
 import json
 import pytest
 from globals.constants import CONSTANTS
+from globals.types import SnapshotType, get_snapshot_filename
 
 
 def clean_folder(base_dir:str):
@@ -11,9 +12,9 @@ def clean_folder(base_dir:str):
     os.remove(os.path.join(base_dir, CONSTANTS.FilesFoldersNames.log_filename))
 
 def load_snapshots(base_dir:str):
-    row_null_distribution_snapshot = _load_snapshot(base_dir, CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot)
-    column_null_count_snapshot = _load_snapshot(base_dir, CONSTANTS.FilesFoldersNames.column_null_count_snapshot)
-    column_pair_null_pattern_snapshot = _load_snapshot(base_dir, CONSTANTS.FilesFoldersNames.column_pair_null_pattern_snapshot)
+    row_null_distribution_snapshot = _load_snapshot(base_dir, get_snapshot_filename(SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT))
+    column_null_count_snapshot = _load_snapshot(base_dir, get_snapshot_filename(SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT))
+    column_pair_null_pattern_snapshot = _load_snapshot(base_dir, get_snapshot_filename(SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT))
     return row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot
 
 def _load_snapshot(base_dir:str, snapshot_name:str):

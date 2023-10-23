@@ -4,6 +4,7 @@ import time
 from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
 from tools.null_value_inspector.snapshot.model.snapshot_model import SnapshotModel
 
+from globals.types import SnapshotType, get_snapshot_filename
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
@@ -27,17 +28,17 @@ class BaseSnapshot:
     _snapshot_model2:SnapshotModel 
     _state:types.State
     _documentation:Documentation
-    _snapshot_name:str
-    _type:types.Snapshot
+    _name:str
+    _type:SnapshotType
     _snapshot_filename:str
 
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         self._logger = logger
         self._file_operations = fileOperations
         self._state = 'initial'
-        self._init_snapshot_name()
         self._init_snapshot_type()
-        self._snapshot_filename = ''.join([self._snapshot_name, '.json'])
+        self._name = get_snapshot_filename(self._type)
+        self._snapshot_filename = ''.join([self._name, '.json'])
     
     def get_filename(self):
         return self._snapshot_filename
@@ -85,7 +86,7 @@ class BaseSnapshot:
         self._reset_snapshot_model() # TODO current_refactoring: remove this later
         self._init_snapshot_model()
         self._set_state()
-        self._logger.info(f'Creating {self._snapshot_name}')
+        self._logger.info(f'Creating {self._name}')
         self._file_operations.loop_through_dataset(dataset, self.process_dataframe)
         # loop through the dataset returning csv files that are valid
         for csv_file in self._file_operations.dataset_csv_generator(dataset):

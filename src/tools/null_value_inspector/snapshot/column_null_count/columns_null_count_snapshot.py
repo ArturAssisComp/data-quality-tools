@@ -1,7 +1,7 @@
 import logging
 
 import numpy as np
-from globals.constants import CONSTANTS
+from globals.types import SnapshotType
 from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
 
 from logger.utils import get_custom_logger_name
@@ -17,11 +17,9 @@ class ColumnNullCountSnapshot(BaseSnapshot):
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         super().__init__(logger=logger, fileOperations=fileOperations)
 
-    def _init_snapshot_name(self):
-        self._snapshot_name = CONSTANTS.FilesFoldersNames.column_null_count_snapshot
     
     def _init_snapshot_type(self):
-        self._type = 'column_null_count_snapshot'
+        self._type = SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT
 
         
     def _reset_snapshot_model(self):

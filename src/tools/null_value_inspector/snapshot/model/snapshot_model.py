@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import tools.null_value_inspector.snapshot.types as types
+from globals.types import SnapshotType 
 
 
 class BaseSnapshotContent(BaseModel):
@@ -14,7 +15,7 @@ class SnapshotModel(BaseModel):
     or `population`. If no samples configuration were specified, it will be in
     `population`. It will be in `samples` otherwise.
     '''
-    type:types.Snapshot  
+    type:SnapshotType
     files:list[str] = list()
     state:types.State = 'initial'
     columns:list[str] = list()
