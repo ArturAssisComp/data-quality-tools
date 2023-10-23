@@ -4,10 +4,16 @@ import json
 import os
 
 from logger.utils import get_custom_logger_name
+from enum import Enum
 import pandas as pd
 
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
+
+class CsvFileStatus(Enum):
+    VALID_CSV = 0
+    INVALID_CSV = 1
+    NOT_CSV = 2
 
 
 class FileOperations:
@@ -47,6 +53,25 @@ class FileOperations:
         except Exception as e:
             logger.error(f'Not able to create directories for {os.path.basename(path)} path: {e}')
             raise
+    
+    def dataset_csv_generator(self, dataset:list[str]):
+        '''
+        Generates valid csv file path while looping through `dataset`. If the csv
+        file is not valid, returns None.
+        '''
+        for file_or_dir in dataset:
+            file_or_dir = os.path.abspath(file_or_dir)
+            if os.path.isfile(file_or_dir):
+                match self._checked_csv_file(file_or_dir):
+                    case CsvFileStatus.VALID_CSV:
+                        yield file_or_dir
+                    case _:
+                        yield None
+            elif os.path.isdir(file_or_dir):
+                for file in self._directory_csv_generator(file_or_dir):
+                    yield file
+            else:
+                self._logger.warning(f"Invalid path: {file_or_dir}. Neither a file nor a directory.")
     
     def loop_through_dataset(self, dataset:list[str], processing_method):
         """
@@ -93,6 +118,17 @@ class FileOperations:
 
 
 
+    def _directory_csv_generator(self, directory:str):
+        for dirpath, _, filenames in os.walk(directory):
+            self._logger.info(f'Scanning dir: \'{directory}\'')
+            for filename in filenames:
+                    full_path = os.path.join(dirpath, filename)
+                    match self._checked_csv_file(full_path):
+                        case CsvFileStatus.VALID_CSV:
+                            yield full_path
+                        case CsvFileStatus.INVALID_CSV:
+                            yield None
+
     def _process_directory(self, directory: str, processing_method):
         self._logger.info(f'Scanning dir: \'{directory}\'')
         for dirpath, _, filenames in os.walk(directory):
@@ -108,3 +144,17 @@ class FileOperations:
             df_processing_method(full_path, df)
         except:
             self._logger.error('ERROR! X')
+
+    def _checked_csv_file(self, full_path:str)->CsvFileStatus:
+        if self._ends_with_csv(full_path):
+            self._logger.info(f'Checking file {full_path}')
+            try:
+                pd.read_csv(full_path, nrows=10)
+                return CsvFileStatus.VALID_CSV
+            except:
+                self._logger.error('Invalid csv file')
+                return CsvFileStatus.INVALID_CSV
+        return CsvFileStatus.NOT_CSV
+
+    def _ends_with_csv(self, full_path:str):
+        return full_path.endswith((".csv", ".CSV"))

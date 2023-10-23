@@ -19,7 +19,11 @@ class ColumnNullCountSnapshot(BaseSnapshot):
 
     def _init_snapshot_name(self):
         self._snapshot_name = CONSTANTS.FilesFoldersNames.column_null_count_snapshot
+    
+    def _init_snapshot_type(self):
+        self._type = 'column_null_count_snapshot'
 
+        
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''
         self._snapshot_model = model.ColumnNullCountSnapshotModel.get_basic_instance()

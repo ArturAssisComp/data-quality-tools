@@ -2,6 +2,7 @@ import logging
 import time
 
 from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
+from tools.null_value_inspector.snapshot.model.snapshot_model import SnapshotModel
 
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
@@ -21,10 +22,13 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 class BaseSnapshot:
     _logger:logging.Logger
     _file_operations:FileOperations
+    # TODO current_refactoring: _snapshot_model2 will replace _snapshot_model when this session is over
     _snapshot_model:BaseSnapshotModel
+    _snapshot_model2:SnapshotModel 
     _state:types.State
     _documentation:Documentation
     _snapshot_name:str
+    _type:types.Snapshot
     _snapshot_filename:str
 
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
@@ -32,6 +36,7 @@ class BaseSnapshot:
         self._file_operations = fileOperations
         self._state = 'initial'
         self._init_snapshot_name()
+        self._init_snapshot_type()
         self._snapshot_filename = ''.join([self._snapshot_name, '.json'])
     
     def get_filename(self):
@@ -46,29 +51,47 @@ class BaseSnapshot:
             if self._documentation.column is None:
                 self._logger.error('Invalid documentation for subset-mode: columns expected')
                 raise RuntimeError("Invalid documentation")
-            self._snapshot_model.columns = self._documentation.column.copy()
+            self._snapshot_model.columns = self._documentation.column.copy() # TODO current_refactoring: remove this line
+            self._snapshot_model2.columns = self._documentation.column.copy()
         elif self._documentation.column is None:
             self._state = 'free-mode'
             self._logger.warning('Executing in FREE MODE')
         else:
             self._state = 'strict-mode'
             self._logger.info('Executing in STRICT MODE')
-            self._snapshot_model.columns = self._documentation.column.copy()
-        self._snapshot_model.state = self._state
+            self._snapshot_model.columns = self._documentation.column.copy() # TODO current_refactoring: remove this line
+            self._snapshot_model2.columns = self._documentation.column.copy()
+        self._snapshot_model.state = self._state # TODO current_refactoring: remove this line
+        self._snapshot_model2.state = self._state
     
     
 
+    # TODO current_refactoring: _reset_snapshot_model will be replaced by _init_snapshot_model
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''
         raise NotImplementedError('Implement this method')
 
+    def _init_snapshot_type(self):
+        ''' Initialize the snapshot type '''
+        raise NotImplementedError('Implement this method')
+    
+    def _init_snapshot_model(self):
+        ''' Initialize the snapshot model that will be used '''
+        self._snapshot_model2 = SnapshotModel(type=self._type)
+
 
     def create_snapshot(self, dataset: list[str], snapshot_path: str, documentation:Documentation):
         self._documentation = documentation
-        self._reset_snapshot_model()
+        self._reset_snapshot_model() # TODO current_refactoring: remove this later
+        self._init_snapshot_model()
         self._set_state()
         self._logger.info(f'Creating {self._snapshot_name}')
         self._file_operations.loop_through_dataset(dataset, self.process_dataframe)
+        # loop through the dataset returning csv files that are valid
+        for csv_file in self._file_operations.dataset_csv_generator(dataset):
+            self._logger.critical(csv_file)
+            if csv_file:
+                self.process_csv_file(csv_file)
         self._save_snapshot_to_json(snapshot_path)
 
     def _save_snapshot_to_json(self, snapshot_path:str):
@@ -114,6 +137,34 @@ class BaseSnapshot:
 
         if more_str or less_str:
             self._logger.warning(f'Invalid columns: {more_str} {less_str}')
+
+    def process_csv_file(self, file_path: str, snapshot:SnapshotModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):
+        """
+        Process a dataframe to extract snapshot data.
+
+        ## Parameters
+        - filename: The name of the source file.
+        - df: The dataframe to be processed.
+        - snapshot_path: Path to save the snapshot.
+        """
+        documentation = documentation or self._documentation
+        state = state or self._state
+        snapshot = snapshot or self._snapshot_model2
+
+        '''
+        if self._file_will_be_processed(documentation, state, df):
+            try:
+                initial_time = time.time()
+                self._perform_specific_processing(df, snapshot, state, documentation)
+                snapshot.files.append(file_path)
+                final_time = time.time()
+                self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s)')
+
+            except Exception as e:
+                self._logger.error(f'Error while processing the file ({file_path}): {e}')
+        else:
+            self._logger.warning(f'SKIPPED! X')
+        '''
 
 
     def process_dataframe(self, file_path: str, df: pd.DataFrame, snapshot:BaseSnapshotModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):

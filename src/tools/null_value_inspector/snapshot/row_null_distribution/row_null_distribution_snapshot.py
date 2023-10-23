@@ -19,6 +19,10 @@ class RowNullDistributionSnapshot(BaseSnapshot):
 
     def _init_snapshot_name(self):
         self._snapshot_name = CONSTANTS.FilesFoldersNames.row_null_distribution_snapshot
+    
+
+    def _init_snapshot_type(self):
+        self._type = 'row_null_distribution_snapshot'
 
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''

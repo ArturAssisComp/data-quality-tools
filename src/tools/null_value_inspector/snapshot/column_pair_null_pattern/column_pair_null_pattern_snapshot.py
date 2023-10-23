@@ -19,6 +19,10 @@ class ColumnPairNullPatternSnapshot(BaseSnapshot):
 
     def _init_snapshot_name(self):
         self._snapshot_name = CONSTANTS.FilesFoldersNames.column_pair_null_pattern_snapshot
+    
+
+    def _init_snapshot_type(self):
+        self._type = 'column_pair_null_pattern_snapshot'
 
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''
