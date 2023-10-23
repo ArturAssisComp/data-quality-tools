@@ -6,5 +6,5 @@ class SnapshotType(Enum):
     COLUMN_NULL_COUNT_SNAPSHOT = 'column_null_count_snapshot'
     COLUMN_PAIR_NULL_PATTERN_SNAPSHOT = 'column_pair_null_pattern_snapshot'
 
-def get_snapshot_filename(type:SnapshotType):
+def get_snapshot_name(type:SnapshotType):
     return type.value.replace('_', '-')

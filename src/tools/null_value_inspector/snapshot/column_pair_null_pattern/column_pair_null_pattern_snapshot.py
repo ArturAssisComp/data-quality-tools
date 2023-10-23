@@ -1,7 +1,7 @@
 import logging
 
 import numpy as np
-from globals.types import SnapshotType
+from globals.types import SnapshotType, get_snapshot_name
 from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
 
 from logger.utils import get_custom_logger_name
@@ -14,13 +14,10 @@ from utils.file_operations import FileOperations
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
 class ColumnPairNullPatternSnapshot(BaseSnapshot):
+    _type:SnapshotType = SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT
+    _name:str = get_snapshot_name(SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT)
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         super().__init__(logger=logger, fileOperations=fileOperations)
-
-    
-
-    def _init_snapshot_type(self):
-        self._type = SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT
 
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''

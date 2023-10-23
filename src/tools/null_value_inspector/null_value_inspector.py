@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+from typing import Type
 
 from globals.interfaces import BaseToolClass
 from globals.constants import CONSTANTS
@@ -13,6 +14,7 @@ from tools.null_value_inspector.result_generator.null_distribution_by_row.genera
 from tools.null_value_inspector.result_generator.statistical_summary.generator import StatisticalSummaryOverviewGenerator
 from tools.null_value_inspector.result_generator.ranked_null_count_by_column.generator import RankedNullCountByColumnOverviewGenerator
 from tools.null_value_inspector.result_generator.null_frequent_pairs.generator import NullFrequentPairsOverviewGenerator
+from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
 from utils.file_operations import FileOperations
 
 # snapshots
@@ -70,7 +72,6 @@ class NullValueInspector(BaseToolClass):
     def _create_snapshots(self, tool_arguments:ToolArguments):
         self._file_operations.create_directory(self._base_snapshot_path)
         log_header(logger, 'Initializing Snapshots')
-        # TODO refactor: extract function from those 3 ifs
         if self._row_null_distribution_snapshot_is_necessary(tool_arguments):
             rowNullDistributionSnapshot = RowNullDistributionSnapshot()
             rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
@@ -83,8 +84,8 @@ class NullValueInspector(BaseToolClass):
             columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot()
             columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
             self._column_pair_null_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairNullPatternSnapshot.get_filename())
-
         log_footer(logger, 'Snapshots Finished    ')
+    
 
     def _column_null_count_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
         return tool_arguments.statistical_summary_overview or tool_arguments.ranked_null_count_by_column_overview

@@ -4,7 +4,7 @@ import time
 from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
 from tools.null_value_inspector.snapshot.model.snapshot_model import SnapshotModel
 
-from globals.types import SnapshotType, get_snapshot_filename
+from globals.types import SnapshotType, get_snapshot_name
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
@@ -25,26 +25,22 @@ class BaseSnapshot:
     _file_operations:FileOperations
     # TODO current_refactoring: _snapshot_model2 will replace _snapshot_model when this session is over
     _snapshot_model:BaseSnapshotModel
-    _snapshot_model2:SnapshotModel 
+    _model:SnapshotModel 
     _state:types.State
     _documentation:Documentation
     _name:str
     _type:SnapshotType
-    _snapshot_filename:str
+    _filename:str
 
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         self._logger = logger
         self._file_operations = fileOperations
         self._state = 'initial'
-        self._init_snapshot_type()
-        self._name = get_snapshot_filename(self._type)
-        self._snapshot_filename = ''.join([self._name, '.json'])
+        self._filename = ''.join([self._name, '.json'])
     
     def get_filename(self):
-        return self._snapshot_filename
+        return self._filename
     
-    def _init_snapshot_name(self):
-        raise NotImplementedError('choose the name from constants files folders names')
 
     def _set_state(self):
         if self._documentation.is_subset_mode:
@@ -53,7 +49,7 @@ class BaseSnapshot:
                 self._logger.error('Invalid documentation for subset-mode: columns expected')
                 raise RuntimeError("Invalid documentation")
             self._snapshot_model.columns = self._documentation.column.copy() # TODO current_refactoring: remove this line
-            self._snapshot_model2.columns = self._documentation.column.copy()
+            self._model.columns = self._documentation.column.copy()
         elif self._documentation.column is None:
             self._state = 'free-mode'
             self._logger.warning('Executing in FREE MODE')
@@ -61,9 +57,9 @@ class BaseSnapshot:
             self._state = 'strict-mode'
             self._logger.info('Executing in STRICT MODE')
             self._snapshot_model.columns = self._documentation.column.copy() # TODO current_refactoring: remove this line
-            self._snapshot_model2.columns = self._documentation.column.copy()
+            self._model.columns = self._documentation.column.copy()
         self._snapshot_model.state = self._state # TODO current_refactoring: remove this line
-        self._snapshot_model2.state = self._state
+        self._model.state = self._state
     
     
 
@@ -72,13 +68,10 @@ class BaseSnapshot:
         ''' Executed before creating the snapshot '''
         raise NotImplementedError('Implement this method')
 
-    def _init_snapshot_type(self):
-        ''' Initialize the snapshot type '''
-        raise NotImplementedError('Implement this method')
     
     def _init_snapshot_model(self):
         ''' Initialize the snapshot model that will be used '''
-        self._snapshot_model2 = SnapshotModel(type=self._type)
+        self._model = SnapshotModel(type=self._type)
 
 
     def create_snapshot(self, dataset: list[str], snapshot_path: str, documentation:Documentation):
@@ -87,7 +80,7 @@ class BaseSnapshot:
         self._init_snapshot_model()
         self._set_state()
         self._logger.info(f'Creating {self._name}')
-        self._file_operations.loop_through_dataset(dataset, self.process_dataframe)
+        self._file_operations.loop_through_dataset(dataset, self.process_dataframe) # eliminate in the future
         # loop through the dataset returning csv files that are valid
         for csv_file in self._file_operations.dataset_csv_generator(dataset):
             self._logger.critical(csv_file)
@@ -97,7 +90,7 @@ class BaseSnapshot:
 
     def _save_snapshot_to_json(self, snapshot_path:str):
         # specify the output file path
-        output_file = os.path.join(snapshot_path, self._snapshot_filename)
+        output_file = os.path.join(snapshot_path, self._filename)
 
         try:
             self._file_operations.to_json(output_file, self._snapshot_model.model_dump())
@@ -150,7 +143,7 @@ class BaseSnapshot:
         """
         documentation = documentation or self._documentation
         state = state or self._state
-        snapshot = snapshot or self._snapshot_model2
+        snapshot = snapshot or self._model
 
         '''
         if self._file_will_be_processed(documentation, state, df):

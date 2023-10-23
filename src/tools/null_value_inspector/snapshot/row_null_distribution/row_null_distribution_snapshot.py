@@ -4,6 +4,7 @@ import numpy as np
 from globals.types import SnapshotType
 from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
 
+from globals.types import get_snapshot_name, SnapshotType
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
 import tools.null_value_inspector.snapshot.types as types
@@ -14,13 +15,10 @@ from utils.file_operations import FileOperations
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
 class RowNullDistributionSnapshot(BaseSnapshot):
+    _name:str = get_snapshot_name(SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT)
+    _type:SnapshotType = SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT
     def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         super().__init__(logger=logger, fileOperations=fileOperations)
-
-    
-
-    def _init_snapshot_type(self):
-        self._type = SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT
 
     def _reset_snapshot_model(self):
         ''' Executed before creating the snapshot '''
