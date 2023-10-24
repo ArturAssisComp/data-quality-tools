@@ -38,5 +38,17 @@ class RowNullDistributionSnapshot(BaseSnapshot):
             snapshot.content[num_of_nulls] = snapshot.content.get(num_of_nulls, 0) + 1
 
 
+    def _perform_specific_processing2(self, df:pd.DataFrame, content:dict[int, int], state:types.State, documentation:Documentation):
+        if state == 'subset-mode':
+            if documentation.column:
+                missing_columns = set(documentation.column) - set(df.columns)
+                if missing_columns:
+                    df = df.assign(**{col:np.nan for col in missing_columns})
+                df = df[documentation.column]
+            else:
+                raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
+
+        for num_of_nulls in df.isnull().sum(axis=1):
+            content[num_of_nulls] = content.get(num_of_nulls, 0) + 1
         
 

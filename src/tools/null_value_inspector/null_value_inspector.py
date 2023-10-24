@@ -1,20 +1,19 @@
 import os
 import logging
 import json
-from typing import Type
 
 from globals.interfaces import BaseToolClass
 from globals.constants import CONSTANTS
 from tools.null_value_inspector.model.tool_arguments import ToolArguments
 from tools.null_value_inspector.model.documentation import Documentation
 from logger.utils import log_footer, log_header, get_custom_logger_name
+from utils.str_operations import parse_samples
 
 # tools
 from tools.null_value_inspector.result_generator.null_distribution_by_row.generator import NullDistributionByRowOverviewGenerator
 from tools.null_value_inspector.result_generator.statistical_summary.generator import StatisticalSummaryOverviewGenerator
 from tools.null_value_inspector.result_generator.ranked_null_count_by_column.generator import RankedNullCountByColumnOverviewGenerator
 from tools.null_value_inspector.result_generator.null_frequent_pairs.generator import NullFrequentPairsOverviewGenerator
-from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
 from utils.file_operations import FileOperations
 
 # snapshots
@@ -34,6 +33,7 @@ class NullValueInspector(BaseToolClass):
     _base_result_path:str 
     _documentation:Documentation
     _file_operations:FileOperations
+    _samples:list[str | int] | None
     def __init__(self, file_operations:FileOperations=FileOperations()):
         self._row_null_distribution_snapshot_path = None
         self._file_operations = file_operations
@@ -46,12 +46,28 @@ class NullValueInspector(BaseToolClass):
 
         self._documentation = self._get_documentation(documentation_path)
 
+        # parse samples
+        self._samples = self._get_samples_specification(tool_arguments.sample)
+
         # create the snapshots
         self._create_snapshots(tool_arguments)
 
         # create the results
         self._create_results(tool_arguments)
 
+    def _get_samples_specification(self, sample_arg:str):
+        if sample_arg:
+            try:
+                result =  parse_samples(sample_arg)
+                if result:
+                    return result
+                raise ValueError('Empty result')
+            except Exception as e:
+                logger.error(f'Invalid argument samples ({sample_arg}): {e}')
+                raise
+        else:
+            return None
+        
 
     def _get_documentation(self, documentation_path:str):
         """
@@ -74,15 +90,15 @@ class NullValueInspector(BaseToolClass):
         log_header(logger, 'Initializing Snapshots')
         if self._row_null_distribution_snapshot_is_necessary(tool_arguments):
             rowNullDistributionSnapshot = RowNullDistributionSnapshot()
-            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
             self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowNullDistributionSnapshot.get_filename())
         if self._column_null_count_snapshot_is_necessary(tool_arguments):
             columnNullCountSnapshot = ColumnNullCountSnapshot()
-            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
             self._column_null_count_snapshot_path = os.path.join(self._base_snapshot_path, columnNullCountSnapshot.get_filename())
         if self._column_pair_null_pattern_snapshot_is_necessary(tool_arguments):
             columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot()
-            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
             self._column_pair_null_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairNullPatternSnapshot.get_filename())
         log_footer(logger, 'Snapshots Finished    ')
     

@@ -65,7 +65,10 @@ class FileOperations:
                 match self._checked_csv_file(file_or_dir):
                     case CsvFileStatus.VALID_CSV:
                         yield file_or_dir
+                    case CsvFileStatus.INVALID_CSV:
+                        yield None
                     case _:
+                        self._logger.warning('Not a csv file')
                         yield None
             elif os.path.isdir(file_or_dir):
                 for file in self._directory_csv_generator(file_or_dir):

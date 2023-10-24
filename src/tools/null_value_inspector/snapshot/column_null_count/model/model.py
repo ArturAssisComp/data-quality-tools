@@ -1,9 +1,8 @@
-from pydantic import  field_validator
+from pydantic import  field_validator, BaseModel
 from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
-from tools.null_value_inspector.snapshot.model.snapshot_model import BaseSnapshotContent
 
 
-class ColumnNullCountSnapshotContent(BaseSnapshotContent):
+class ColumnNullCountSnapshotContent(BaseModel):
     content:dict[str, int]
 
     @field_validator('content')

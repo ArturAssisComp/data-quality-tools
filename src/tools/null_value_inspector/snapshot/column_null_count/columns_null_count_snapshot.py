@@ -36,5 +36,16 @@ class ColumnNullCountSnapshot(BaseSnapshot):
             snapshot.content[col] = snapshot.content.get(col, 0) + int(df[col].isnull().sum())
 
 
+    def _perform_specific_processing2(self, df:pd.DataFrame, content:dict[str, int], state:types.State, documentation:Documentation):
+        if state == 'subset-mode':
+            if documentation.column:
+                missing_columns = set(documentation.column) - set(df.columns)
+                if missing_columns:
+                    df = df.assign(**{col:np.nan for col in missing_columns})
+                df = df[documentation.column]
+            else:
+                raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
+        for col in df.columns:
+            content[col] = content.get(col, 0) + int(df[col].isnull().sum())
         
 

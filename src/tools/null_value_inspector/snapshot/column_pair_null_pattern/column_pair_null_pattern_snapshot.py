@@ -46,6 +46,32 @@ class ColumnPairNullPatternSnapshot(BaseSnapshot):
                         if col1 != col2:
                             snapshot.content[col2][col1] += num_of_common_nulls
 
+    def _perform_specific_processing2(self, df:pd.DataFrame, content:dict[str, dict[str, int]], state:types.State, documentation:Documentation):
+        if state == 'subset-mode':
+            if documentation.column:
+                # TODO refactor: extract function (this code is used in 3 methods)
+                missing_columns = set(documentation.column) - set(df.columns)
+                if missing_columns:
+                    df = df.assign(**{col:np.nan for col in missing_columns})
+                df = df[documentation.column]
+            else:
+                raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
+
+        # TODO refactor
+        if len(df) > 0:
+            for n, col1 in enumerate(df.columns):
+                for i in range(n, len(df.columns)):
+                    col2 = df.columns[i]
+                    num_of_common_nulls = int((df[[col1, col2]].isna().sum(axis=1) == 2).sum())
+                    if num_of_common_nulls > 0:
+                        self._init_column_pair(col1, col2, content)
+                        content[col1][col2] += num_of_common_nulls
+                        if col1 != col2:
+                            content[col2][col1] += num_of_common_nulls
+
+
+
+
     def _init_column_pair(self, col1:str, col2:str, dct:dict):
         if col1 not in dct:
             dct[col1] = {col2:0}
