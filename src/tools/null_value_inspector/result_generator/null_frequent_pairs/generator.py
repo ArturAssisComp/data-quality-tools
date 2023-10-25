@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 import matplotlib.pyplot as plt
 import pandas as pd
 from globals.types import SnapshotType
@@ -20,30 +21,22 @@ MAX_COLUMNS = 40
 
 
 class NullFrequentPairsOverviewGenerator(BaseOverviewGenerator):
+    _needed_snapshots:list[SnapshotType] = [SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT]
     _plot_operations:PlotOperations
     def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations=PlotOperations()):
         super().__init__(snapshot_filepath, logger=logger, fileOperations=fileOperations)
         self._plot_operations = plot_operations
     
-    def _generate_specific_overview(self, basedir_path: str):
-        column_pair_null_pattern_snapshot = self._snapshots[SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT]
 
-        if column_pair_null_pattern_snapshot  is None:
-            self._logger.error(f'Invalid snapshot: {SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT.value}')
-            raise RuntimeError('Invalid Snapshot')
+    def _handle_content(self, parsed_content_dict:dict[SnapshotType, Any], basedir_path:str, name_preffix:str=''):
+        column_pair_null_pattern_snapshot_content = parsed_content_dict[SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT]
+        try:
+            self._generate_heatmap(column_pair_null_pattern_snapshot_content, basedir_path, name_preffix=name_preffix)
+        except Exception as e:
+            self._logger.error(f'Result not generated: {e}')
+        finally:
+            plt.close()
 
-        if column_pair_null_pattern_snapshot.population:
-            column_pair_null_pattern_snapshot_content_model = ColumnPairNullPatternSnapshotContent(content=column_pair_null_pattern_snapshot.population['content'])
-            try:
-                self._generate_heatmap(column_pair_null_pattern_snapshot_content_model, basedir_path)
-            except Exception as e:
-                self._logger.error(f'Result not generated: {e}')
-            finally:
-                plt.close()
-        elif column_pair_null_pattern_snapshot.samples:
-            pass
-        else:
-            self._logger.error('Invalid snapshot format')
 
     def _generate_heatmap(self, column_pair_null_pattern_snapshot_content:ColumnPairNullPatternSnapshotContent, basedir_path:str, name_preffix:str=''):
         content = column_pair_null_pattern_snapshot_content.content
