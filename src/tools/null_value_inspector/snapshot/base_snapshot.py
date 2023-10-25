@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Callable
 
 from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
 from tools.null_value_inspector.snapshot.model.snapshot_model import  SnapshotModel
@@ -81,7 +82,7 @@ class BaseSnapshot:
         self._init_snapshot_model()
         self._set_state()
         self._logger.info(f'Creating {self._name}')
-        self._file_operations.loop_through_dataset(dataset, self.process_dataframe) # eliminate in the future
+        #self._file_operations.loop_through_dataset(dataset, self.process_dataframe) # eliminate in the future
         # loop through the dataset returning csv files that are valid
         for csv_file in self._file_operations.dataset_csv_generator(dataset):
             if csv_file:
@@ -161,30 +162,38 @@ class BaseSnapshot:
         if self._file_will_be_processed(documentation, state, sample_df):
             try:
                 if samples:
+                    if snapshot.samples is None:
+                        snapshot.samples = dict()
                     # process samples
                     for sample in samples:
+                        key = str(sample)
+                        snapshot.samples[key] = {'content':dict()}
+                        sample_str = f'(sample - {key})'
                         value, is_int = get_int_or_float(sample)
                         if is_int:
                             # get value rows from csv file
-                            pass
+                            self._process_dataframe_in_chunks(file_path, CSV_CHUNK_SIZE, snapshot.samples[key]['content'], snapshot.files, state, documentation, self._file_operations.csv_generator_abs_sample, sample_str=sample_str, **{'sample_abs_size':value})
                         else:
                             # get value % rows from the csv file
-                            pass
+                            rel_value = value/100
+                            self._process_dataframe_in_chunks(file_path, CSV_CHUNK_SIZE, snapshot.samples[key]['content'], snapshot.files, state, documentation, self._file_operations.csv_generator_rel_sample,  sample_str=sample_str, **{'sample_rel_size':rel_value})
                 else:
                     # process population
                     if snapshot.population is None:
                         snapshot.population = {'content':dict()}
-                    initial_time = time.time()
-                    for df in pd.read_csv(file_path, chunksize=CSV_CHUNK_SIZE, dtype=str):
-                        self._perform_specific_processing2(df, snapshot.population['content'], state, documentation)
-                    snapshot.files.append(file_path)
-                    final_time = time.time()
-                    self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s)')
+                    self._process_dataframe_in_chunks(file_path, CSV_CHUNK_SIZE, snapshot.population['content'], snapshot.files, state, documentation, self._file_operations.csv_generator)
             except Exception as e:
                 self._logger.error(f'Error while processing the file ({file_path}): {e}')
         else:
             self._logger.warning(f'SKIPPED! X')
 
+    def _process_dataframe_in_chunks(self, target_file_path:str, chunksize:int, content:dict, files:list, state:types.State, documentation:Documentation, generator_func:Callable, sample_str:str='', **kwargs):
+        initial_time = time.time()
+        for df in generator_func(target_file_path, chunksize=chunksize, dtype=str, **kwargs):
+            self._perform_specific_processing2(df, content, state, documentation)
+        files.append(target_file_path)
+        final_time = time.time()
+        self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s) ({sample_str})')
 
     def process_dataframe(self, file_path: str, df: pd.DataFrame, snapshot:BaseSnapshotModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):
         """

@@ -2,6 +2,7 @@
 import logging
 import json
 import os
+import random
 
 from logger.utils import get_custom_logger_name
 from enum import Enum
@@ -28,6 +29,42 @@ class FileOperations:
         except Exception as e:
             self._logger.error(f'Invalid CSV file ({filename}): {e}')
             raise
+
+
+    def csv_generator(self, filename:str, chunksize:int|None=None, dtype=str):
+        with pd.read_csv(filename, chunksize=chunksize, dtype=dtype) as reader: # type: ignore
+            for df in reader:
+                yield df
+    
+    def csv_generator_abs_sample(self, filename:str, sample_abs_size:int, chunksize:int|None=None, dtype=str):
+        if sample_abs_size <= 0:
+            raise ValueError("Sample size must be a positive integer")
+        
+        num_rows = self.count_csv_rows(filename)
+        num_to_skip = max(num_rows - sample_abs_size, 0)
+        skip = sorted(random.sample(range(1, num_rows + 1), num_to_skip))  # the 0-indexed header will not be included in the skip list
+        with pd.read_csv(filename, skiprows=skip, chunksize=chunksize, dtype=dtype) as reader: # type: ignore
+            for sample_df in reader:
+                yield sample_df
+    
+    def count_csv_rows(self, filename:str):
+        with open(filename, 'r') as f:
+            num_lines = sum(1 for _ in f)
+        return num_lines - 1
+    
+    def csv_generator_rel_sample(self, filename:str, sample_rel_size:float, chunksize:int|None=None, dtype=str):
+        if sample_rel_size <= 0 or sample_rel_size > 1:
+            raise ValueError(f"Sample relative size must be in the interval ]0, 100], but it is: {sample_rel_size:.2f}")
+        
+        with pd.read_csv(filename, chunksize=chunksize, dtype=dtype) as reader:  # type: ignore
+            for sample_df in reader:
+                N = int(sample_rel_size * len(sample_df))
+                if N == 0:
+                    N += 1
+                yield sample_df.sample(n=N)
+
+
+
     def read_Json(self, filename:str):
         try:
             with open(filename, 'r') as f:
@@ -123,7 +160,7 @@ class FileOperations:
 
     def _directory_csv_generator(self, directory:str):
         for dirpath, _, filenames in os.walk(directory):
-            self._logger.info(f'Scanning dir: \'{directory}\'')
+            self._logger.info(f'Scanning dir: \'{dirpath}\'')
             for filename in filenames:
                     full_path = os.path.join(dirpath, filename)
                     match self._checked_csv_file(full_path):
