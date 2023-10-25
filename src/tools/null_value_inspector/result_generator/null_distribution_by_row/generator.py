@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 import matplotlib.pyplot as plt
 from globals.types import SnapshotType
 
@@ -30,33 +31,25 @@ X_LABEL = 'Null Per Row'
 TITLE = 'Null Distribution by Row Overview'
 
 class NullDistributionByRowOverviewGenerator(BaseOverviewGenerator):
+    _needed_snapshots:list[SnapshotType] = [SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
     _plot_operations:PlotOperations
     def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations=PlotOperations()):
         super().__init__(snapshot_filepath, logger=logger, fileOperations=fileOperations)
         self._plot_operations = plot_operations
 
-    def _generate_specific_overview(self, basedir_path: str):
-        row_null_distribution_snapshot = self._snapshots[SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
-        if row_null_distribution_snapshot is None:
-            self._logger.error(f'Invalid snapshot: row_null_distribution_snapshot')
-            raise RuntimeError('Invalid Snapshot')
-        if row_null_distribution_snapshot.population:
-            rowNullDistributionSnapshotContentModel = RowNullDistributionSnapshotContent(content=row_null_distribution_snapshot.population['content'])
+    def _handle_content(self, parsed_content_dict:dict[SnapshotType, Any], basedir_path:str, name_preffix:str=''):
+        rowNullDistributionSnapshotContentModel = parsed_content_dict[SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
+        try:
             try:
-                try:
-                    self._generate_bar_plot(rowNullDistributionSnapshotContentModel, basedir_path)
-                finally:
-                    plt.close()
-                try:
-                    self._generate_bar_plot(rowNullDistributionSnapshotContentModel, basedir_path, relative=True)
-                finally:
-                    plt.close()
-            except Exception as e:
-                self._logger.error(f'Result not generated: {e}')
-        elif row_null_distribution_snapshot.samples:
-            pass
-        else:
-            self._logger.error('Invalid snapshot format')
+                self._generate_bar_plot(rowNullDistributionSnapshotContentModel, basedir_path, name_preffix=name_preffix)
+            finally:
+                plt.close()
+            try:
+                self._generate_bar_plot(rowNullDistributionSnapshotContentModel, basedir_path, relative=True, name_preffix=name_preffix)
+            finally:
+                plt.close()
+        except Exception as e:
+            self._logger.error(f'Result not generated: {e}')
 
 
 
