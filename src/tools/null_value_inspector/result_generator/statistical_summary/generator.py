@@ -2,10 +2,11 @@ import logging
 import os
 
 import numpy as np
-from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotModel
-from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotModel
+from globals.types import SnapshotType
+from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
+from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
+from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
 
-from tools.null_value_inspector.model.documentation import Documentation
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name
 from utils.statistics import std_dev_weighted
@@ -17,33 +18,39 @@ from reportlab.pdfgen import canvas
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 2, 'last'))
 
-class StatisticalSummaryOverviewGenerator:
-    _logger:logging.Logger
-    _fileOperations:FileOperations
-    _row_null_distribution_snapshot:RowNullDistributionSnapshotModel
-    _column_null_count_snapshot:ColumnNullCountSnapshotModel
-    _base_result_filepath:str
-    _documentation:Documentation
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations()):
-        self._logger = logger
-        self._fileOperations = fileOperations
+
+class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
+    def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations()):
+        super().__init__(snapshot_filepath, logger=logger, fileOperations=fileOperations)
     
-    def generate_overview(self, row_null_distribution_snapshot_filepath:str, column_null_count_snapshot_filepath:str, base_result_filepath:str, documentation:Documentation):
-        self._logger.info('Creating overview')
-        self._row_null_distribution_snapshot = RowNullDistributionSnapshotModel(** self._fileOperations.read_Json(row_null_distribution_snapshot_filepath))
-        self._column_null_count_snapshot = ColumnNullCountSnapshotModel(** self._fileOperations.read_Json(column_null_count_snapshot_filepath))
-        self._base_result_filepath = base_result_filepath
-        self._documentation = documentation
-        try:
-            self._generate_statistical_summary()
-        except Exception as e:
-            self._logger.error(f'Result not generated: {e}')
+    def _generate_specific_overview(self, basedir_path: str):
+        row_null_distribution_snapshot = self._snapshots[SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
+        column_null_count_snapshot = self._snapshots[SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
+
+        if row_null_distribution_snapshot is None:
+            self._logger.error(f'Invalid snapshot: {SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT.value}')
+            raise RuntimeError('Invalid Snapshot')
+        if column_null_count_snapshot is None:
+            self._logger.error(f'Invalid snapshot: {SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT.value}')
+            raise RuntimeError('Invalid Snapshot')
+
+        if row_null_distribution_snapshot.population and column_null_count_snapshot.population:
+            rowNullDistributionSnapshotContentModel = RowNullDistributionSnapshotContent(content=row_null_distribution_snapshot.population['content'])
+            columnNullCountSnapshotContentModel = ColumnNullCountSnapshotContent(content=column_null_count_snapshot.population['content'])
+            try:
+                self._generate_statistical_summary(rowNullDistributionSnapshotContentModel, columnNullCountSnapshotContentModel, basedir_path)
+            except Exception as e:
+                self._logger.error(f'Result not generated: {e}')
+        elif row_null_distribution_snapshot.samples and column_null_count_snapshot.samples:
+            pass
+        else:
+            self._logger.error('Invalid snapshot format')
     
 
 
-    def _generate_statistical_summary(self):
-        distribution_by_row = self._row_null_distribution_snapshot.content
-        nulls_per_column = self._column_null_count_snapshot.content
+    def _generate_statistical_summary(self, row_null_distribution_snapshot_content_model:RowNullDistributionSnapshotContent, column_null_count_snapshot_model:ColumnNullCountSnapshotContent, base_dir_path:str, name_preffix:str=''):
+        distribution_by_row = row_null_distribution_snapshot_content_model.content
+        nulls_per_column = column_null_count_snapshot_model.content
 
         general_summary = self._create_general_summary(distribution_by_row, nulls_per_column)
 
@@ -73,11 +80,11 @@ class StatisticalSummaryOverviewGenerator:
         }
 
         # save the result
-        self._fileOperations.to_json(os.path.join(self._base_result_filepath, 'statistical_summary.json'), statistical_summary)
+        self._fileOperations.to_json(os.path.join(base_dir_path, name_preffix + 'statistical_summary.json'), statistical_summary)
 
         # save to a pdf
         try:
-            self._generate_pdf_report(statistical_summary, os.path.join(self._base_result_filepath, 'report.pdf'))
+            self._generate_pdf_report(statistical_summary, os.path.join(base_dir_path, name_preffix + 'report.pdf'))
         finally:
             plt.close()
 
@@ -188,3 +195,8 @@ class StatisticalSummaryOverviewGenerator:
 
     def _create_std_deviation_nulls_per_column(self, values:list[int]):
         return round(np.std(values), 4)
+
+
+
+
+
