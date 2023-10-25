@@ -4,6 +4,7 @@ import json
 
 from globals.interfaces import BaseToolClass
 from globals.constants import CONSTANTS
+from globals.types import SnapshotType
 from tools.null_value_inspector.model.tool_arguments import ToolArguments
 from tools.null_value_inspector.model.documentation import Documentation
 from logger.utils import log_footer, log_header, get_custom_logger_name
@@ -129,13 +130,17 @@ class NullValueInspector(BaseToolClass):
         if tool_arguments.null_distribution_by_row_overview:
             overview_name = 'null_distribution_by_row_overview'
             logger.info(f'Creating {overview_name}')
-            if not self._snapshot_is_available(self._row_null_distribution_snapshot_path):
-                logger.error('Invalid row_null_distribution_snapshot')
-            else:
+            if self._row_null_distribution_snapshot_path and os.path.isfile(self._row_null_distribution_snapshot_path):
                 try:
-                    NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
+                    #NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
+                    snapshot_path_map = {
+                        SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT: self._row_null_distribution_snapshot_path, 
+                    }
+                    NullDistributionByRowOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path) 
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid row_null_distribution_snapshot')
         if tool_arguments.ranked_null_count_by_column_overview:
             overview_name = 'ranked_null_count_by_column_overview'
             logger.info(f'Creating {overview_name}')

@@ -36,24 +36,27 @@ class TestNullValueInspector:
         row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot = execute_command(base_dir)
         assert row_null_distribution_snapshot == {
             "type": "row_null_distribution_snapshot", 
-            "content": {"0": 10, "1": 6, "2":1, "3": 1, "4": 1}, 
+            "population":{"content": {"0": 10, "1": 6, "2":1, "3": 1, "4": 1}}, 
+            "samples":None,
             "state": "free-mode", 
             "columns":[]
         }
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "free-mode", 
-            "content": {"A": 3, "B": 8, "C": 3, "D": 1},
+            "population":{"content": {"A": 3, "B": 8, "C": 3, "D": 1}},
+            "samples":None,
             "columns":[]
         }
         assert column_pair_null_pattern_snapshot == {
             'type': 'column_pair_null_pattern_snapshot',
-            'content':{
+            'population':{'content':{
                 'A':{'A':3, 'B':2, 'C':2, 'D':1}, 
                 'B':{'A':2, 'B':8, 'C':3, 'D':1}, 
                 'C':{'A':2, 'B':3, 'C':3, 'D':1}, 
                 'D':{'A':1, 'B':1, 'C':1, 'D':1}
-            },
+            }},
+            "samples":None,
             'state':'free-mode',
             "columns":[]
         }
@@ -66,20 +69,23 @@ class TestNullValueInspector:
         row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot = execute_command(base_dir, '--doc ./documentation.txt')
         assert row_null_distribution_snapshot == {
             "type": "row_null_distribution_snapshot", 
-            "content": {"0": 1, "1": 1}, 
+            "population":{"content": {"0": 1, "1": 1}}, 
+            "samples":None,
             "state": "strict-mode", 
             "columns":['A', 'B']
         }
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "strict-mode", 
-            "content": {"A": 0, "B": 1}, 
+            "population":{"content": {"A": 0, "B": 1}}, 
+            "samples":None,
             "columns":['A', 'B']
 
         }
         assert column_pair_null_pattern_snapshot == {
             'type': 'column_pair_null_pattern_snapshot',
-            'content':{'B':{'B':1}},
+            'population':{'content':{'B':{'B':1}}},
+            "samples":None,
             'state':'strict-mode', 
             "columns":['A', 'B']
 
@@ -92,22 +98,25 @@ class TestNullValueInspector:
         row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot = execute_command(base_dir, '--doc ./documentation_subset_mode.txt')
         assert row_null_distribution_snapshot == {
             "type": "row_null_distribution_snapshot", 
-            "content": {"0": 13, "1": 4, "2":2}, 
+            "population":{"content": {"0": 13, "1": 4, "2":2}}, 
+            "samples":None,
             "state": "subset-mode", 
             "columns":['A', 'C'] 
         }
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "subset-mode", 
-            "content": {"A": 3, "C": 5}, 
+            "population":{"content": {"A": 3, "C": 5}}, 
+            "samples":None,
             "columns":['A', 'C']
         }
         assert column_pair_null_pattern_snapshot == {
             'type': 'column_pair_null_pattern_snapshot',
-            'content':{
+            'population':{'content':{
                 'A':{'A':3, 'C':2}, 
                 'C':{'A':2, 'C':5}, 
-            },
+            }},
+            "samples":None,
             'state':'subset-mode', 
             "columns":['A', 'C']
         }

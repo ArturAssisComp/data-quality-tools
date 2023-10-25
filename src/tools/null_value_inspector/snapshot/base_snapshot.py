@@ -86,12 +86,12 @@ class BaseSnapshot:
         for csv_file in self._file_operations.dataset_csv_generator(dataset):
             if csv_file:
                 self.process_csv_file(csv_file, samples)
-        self._save_snapshot_to_json(snapshot_path)
+        #self._save_snapshot_to_json(snapshot_path)
         self._save_snapshot_to_json2(snapshot_path)
 
     def _save_snapshot_to_json2(self, snapshot_path:str):
         # specify the output file path
-        output_file = os.path.join(snapshot_path, self._filename + 'sample')
+        output_file = os.path.join(snapshot_path, self._filename)
 
         try:
             self._file_operations.to_json(output_file, self._model.model_dump())
