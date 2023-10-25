@@ -1,8 +1,11 @@
 import logging
 import os
+from typing import Any
 
 import numpy as np
 from globals.types import SnapshotType
+from tools.null_value_inspector.snapshot.column_pair_null_pattern.model.model import ColumnPairNullPatternSnapshotContent
+from tools.null_value_inspector.snapshot.model.snapshot_model import SnapshotModel
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
 from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
@@ -20,33 +23,23 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 
 
 class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
+    _needed_snapshots:list[SnapshotType] = [SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT, SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
     def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations()):
         super().__init__(snapshot_filepath, logger=logger, fileOperations=fileOperations)
     
-    def _generate_specific_overview(self, basedir_path: str):
-        row_null_distribution_snapshot = self._snapshots[SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
-        column_null_count_snapshot = self._snapshots[SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
-
-        if row_null_distribution_snapshot is None:
-            self._logger.error(f'Invalid snapshot: {SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT.value}')
-            raise RuntimeError('Invalid Snapshot')
-        if column_null_count_snapshot is None:
-            self._logger.error(f'Invalid snapshot: {SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT.value}')
-            raise RuntimeError('Invalid Snapshot')
-
-        if row_null_distribution_snapshot.population and column_null_count_snapshot.population:
-            rowNullDistributionSnapshotContentModel = RowNullDistributionSnapshotContent(content=row_null_distribution_snapshot.population['content'])
-            columnNullCountSnapshotContentModel = ColumnNullCountSnapshotContent(content=column_null_count_snapshot.population['content'])
-            try:
-                self._generate_statistical_summary(rowNullDistributionSnapshotContentModel, columnNullCountSnapshotContentModel, basedir_path)
-            except Exception as e:
-                self._logger.error(f'Result not generated: {e}')
-        elif row_null_distribution_snapshot.samples and column_null_count_snapshot.samples:
-            pass
-        else:
-            self._logger.error('Invalid snapshot format')
     
+    
+    def _handle_content(self, parsed_content_dict:dict[SnapshotType, Any], basedir_path:str, name_preffix:str=''):
+        columnNullCountSnapshotContentModel = parsed_content_dict[SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
+        rowNullDistributionSnapshotContentModel = parsed_content_dict[SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
+        try:
+            self._generate_statistical_summary(rowNullDistributionSnapshotContentModel, columnNullCountSnapshotContentModel, basedir_path, name_preffix=name_preffix)
+        except Exception as e:
+            self._logger.error(f'Result not generated: {e}')
 
+    
+                
+    
 
     def _generate_statistical_summary(self, row_null_distribution_snapshot_content_model:RowNullDistributionSnapshotContent, column_null_count_snapshot_model:ColumnNullCountSnapshotContent, base_dir_path:str, name_preffix:str=''):
         distribution_by_row = row_null_distribution_snapshot_content_model.content
