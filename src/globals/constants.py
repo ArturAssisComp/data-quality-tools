@@ -4,9 +4,6 @@ class CONSTANTS(Immutable):
     class FilesFoldersNames(Immutable):
         results = 'results'
         snapshot = 'snapshots'
-        row_null_distribution_snapshot='row-null-distribution-snapshot'
-        column_null_count_snapshot='column-null-count-snapshot'
-        column_pair_null_pattern_snapshot='column-pair-null-pattern-snapshot'
         log_filename = 'data-quality-tools.log'
     class Logger(Immutable):
         class Formatters(Immutable):

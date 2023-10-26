@@ -6,7 +6,6 @@ import numpy as np
 
 from tools.null_value_inspector.snapshot.row_null_distribution.row_null_distribution_snapshot import RowNullDistributionSnapshot
 from utils.file_operations import FileOperations
-import tools.null_value_inspector.snapshot.row_null_distribution.model.model as model 
 from tools.null_value_inspector.model.documentation import Documentation
 import tools.null_value_inspector.snapshot.types as types 
 
@@ -61,8 +60,7 @@ class TestRowNullDistributionSnapshot:
     def test_process_dataframe(self, _, documentation:Documentation, df_dict:dict, initial_content:dict, final_content:dict):
         mock_logger = Mock(spec=logging.Logger)
         mock_file_operations = Mock(spec=FileOperations)
-        snapshot = model.RowNullDistributionSnapshotModel.get_basic_instance()
-        snapshot.content = initial_content.copy()
+        content = initial_content.copy()
         snapshotBuilder = RowNullDistributionSnapshot(logger=mock_logger, fileOperations=mock_file_operations)
         df = pd.DataFrame(df_dict)
         state:types.State
@@ -73,5 +71,5 @@ class TestRowNullDistributionSnapshot:
         else:
             state = 'free-mode'
 
-        snapshotBuilder.process_dataframe('filename', df, snapshot=snapshot, documentation=documentation, state=state)
-        assert  snapshot.content == final_content
+        snapshotBuilder.perform_specific_processing(df, content, documentation=documentation, state=state)
+        assert  content == final_content

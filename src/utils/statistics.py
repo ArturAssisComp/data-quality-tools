@@ -41,7 +41,7 @@ def std_dev_weighted(weighted_dict:dict[int, int]):
     if sum(values) == 0:
         raise ValueError('Total frequency must not be 0')
 
-    weighted_mean = np.average(keys, weights=values)
+    weighted_mean = float(np.average(keys, weights=values))
 
     variance = np.dot(values, (keys - weighted_mean)**2) / values.sum()
     

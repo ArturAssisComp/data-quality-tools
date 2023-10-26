@@ -4,9 +4,11 @@ import json
 
 from globals.interfaces import BaseToolClass
 from globals.constants import CONSTANTS
+from globals.types import SnapshotType
 from tools.null_value_inspector.model.tool_arguments import ToolArguments
 from tools.null_value_inspector.model.documentation import Documentation
 from logger.utils import log_footer, log_header, get_custom_logger_name
+from utils.str_operations import parse_samples
 
 # tools
 from tools.null_value_inspector.result_generator.null_distribution_by_row.generator import NullDistributionByRowOverviewGenerator
@@ -32,8 +34,8 @@ class NullValueInspector(BaseToolClass):
     _base_result_path:str 
     _documentation:Documentation
     _file_operations:FileOperations
+    _samples:list[str | int] | None
     def __init__(self, file_operations:FileOperations=FileOperations()):
-        self._row_null_distribution_snapshot_path = None
         self._file_operations = file_operations
 
 
@@ -44,12 +46,28 @@ class NullValueInspector(BaseToolClass):
 
         self._documentation = self._get_documentation(documentation_path)
 
+        # parse samples
+        self._samples = self._get_samples_specification(tool_arguments.sample)
+
         # create the snapshots
         self._create_snapshots(tool_arguments)
 
         # create the results
         self._create_results(tool_arguments)
 
+    def _get_samples_specification(self, sample_arg:str):
+        if sample_arg:
+            try:
+                result =  parse_samples(sample_arg)
+                if result:
+                    return result
+                raise ValueError('Empty result')
+            except Exception as e:
+                logger.error(f'Invalid argument samples ({sample_arg}): {e}')
+                raise
+        else:
+            return None
+        
 
     def _get_documentation(self, documentation_path:str):
         """
@@ -70,21 +88,20 @@ class NullValueInspector(BaseToolClass):
     def _create_snapshots(self, tool_arguments:ToolArguments):
         self._file_operations.create_directory(self._base_snapshot_path)
         log_header(logger, 'Initializing Snapshots')
-        # TODO refactor: extract function from those 3 ifs
         if self._row_null_distribution_snapshot_is_necessary(tool_arguments):
             rowNullDistributionSnapshot = RowNullDistributionSnapshot()
-            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
             self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowNullDistributionSnapshot.get_filename())
         if self._column_null_count_snapshot_is_necessary(tool_arguments):
             columnNullCountSnapshot = ColumnNullCountSnapshot()
-            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
             self._column_null_count_snapshot_path = os.path.join(self._base_snapshot_path, columnNullCountSnapshot.get_filename())
         if self._column_pair_null_pattern_snapshot_is_necessary(tool_arguments):
             columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot()
-            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation)
+            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
             self._column_pair_null_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairNullPatternSnapshot.get_filename())
-
         log_footer(logger, 'Snapshots Finished    ')
+    
 
     def _column_null_count_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
         return tool_arguments.statistical_summary_overview or tool_arguments.ranked_null_count_by_column_overview
@@ -102,43 +119,56 @@ class NullValueInspector(BaseToolClass):
         if tool_arguments.statistical_summary_overview:
             overview_name = 'summary_overview'
             logger.info(f'Creating {overview_name}')
-            if not self._snapshot_is_available(self._row_null_distribution_snapshot_path) or not self._snapshot_is_available(self._column_null_count_snapshot_path):
-                logger.error('Invalid row_null_distribution_snapshot or columns_null_count_snapshot')
-            else:
+            if self._row_null_distribution_snapshot_path and os.path.isfile(self._row_null_distribution_snapshot_path) and self._column_null_count_snapshot_path and os.path.isfile(self._column_null_count_snapshot_path):
                 try:
-                    StatisticalSummaryOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._column_null_count_snapshot_path, self._base_result_path, self._documentation)  # type: ignore
+                    snapshot_path_map = {
+                        SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT: self._row_null_distribution_snapshot_path, 
+                        SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT: self._column_null_count_snapshot_path,
+                    }
+                    StatisticalSummaryOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path)
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid row_null_distribution_snapshot or columns_null_count_snapshot')
         if tool_arguments.null_distribution_by_row_overview:
             overview_name = 'null_distribution_by_row_overview'
             logger.info(f'Creating {overview_name}')
-            if not self._snapshot_is_available(self._row_null_distribution_snapshot_path):
-                logger.error('Invalid row_null_distribution_snapshot')
-            else:
+            if self._row_null_distribution_snapshot_path and os.path.isfile(self._row_null_distribution_snapshot_path):
                 try:
-                    NullDistributionByRowOverviewGenerator().generate_overview(self._row_null_distribution_snapshot_path, self._base_result_path) # type: ignore
+                    snapshot_path_map = {
+                        SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT: self._row_null_distribution_snapshot_path, 
+                    }
+                    NullDistributionByRowOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path) 
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid row_null_distribution_snapshot')
         if tool_arguments.ranked_null_count_by_column_overview:
             overview_name = 'ranked_null_count_by_column_overview'
             logger.info(f'Creating {overview_name}')
-            if not self._snapshot_is_available(self._column_null_count_snapshot_path):
-                logger.error('Invalid column_null_count_snapshot')
-            else:
+            if self._column_null_count_snapshot_path and os.path.isfile(self._column_null_count_snapshot_path):
                 try:
-                    RankedNullCountByColumnOverviewGenerator().generate_overview(self._column_null_count_snapshot_path, self._base_result_path) # type: ignore
+                    snapshot_path_map = {
+                        SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT: self._column_null_count_snapshot_path, 
+                    }
+                    RankedNullCountByColumnOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path)
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid column_null_count_snapshot')
         if tool_arguments.null_frequent_pairs_overview:
             overview_name = 'null_frequent_pairs_overview'
             logger.info(f'Creating {overview_name}')
-            if not self._snapshot_is_available(self._column_pair_null_pattern_snapshot_path):
-                logger.error('Invalid column_pair_null_pattern_snapshot')
-            else:
+            if self._column_pair_null_pattern_snapshot_path and os.path.isfile(self._column_pair_null_pattern_snapshot_path):
                 try:
-                    NullFrequentPairsOverviewGenerator().generate_overview(self._column_pair_null_pattern_snapshot_path, self._base_result_path) # type: ignore
+                    snapshot_path_map = {
+                        SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT: self._column_pair_null_pattern_snapshot_path, 
+                    }
+                    NullFrequentPairsOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path)
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid column_pair_null_pattern_snapshot')
         log_footer(logger, 'Results Finished    ')
     
     def _snapshot_is_available(self, snapshot_path:str|None):

@@ -9,29 +9,37 @@ from matplotlib.colors import LogNorm
 class PlotOperations:
     _DPI=300
     
-    def plot_heatmap(self, df:pd.DataFrame, title:str, base_result_filepath:str, fig_name:str, log_scale=False):
+
+    def plot_heatmap(self, df:pd.DataFrame, title:str, base_result_filepath:str, fig_name:str, log_scale:bool=False, relative:bool=False):
         # Define your order
         order = list(df.columns)
 
         # Reorder your DataFrame
-        df = df.loc[list(reversed(order)), order]
+        original_df = df.loc[list(reversed(order)), order]
 
         # Increase the figure size
         plt.figure(figsize=(20, 14))
-    
+
         # calculate vmin and vmax
-        df_copy = df.copy()
+        df_copy = original_df.copy()
         for col in df_copy.columns:
             df_copy.loc[col, col] = np.nan
         vmin = df_copy.min().min()
         vmax = df_copy.max().max()
 
         delta = 1e-3
-        min_log_scale = 1
-        norm = LogNorm(vmin=vmin + delta + min_log_scale, vmax=vmax + delta)  if log_scale else None
+        if relative:
+            total_null_pairs = df_copy.sum().sum()
+            rel_df = (df_copy / total_null_pairs) * 100  # Convert to percentage
+            annot = np.vectorize(lambda x: f"{x:.2f}%")(rel_df + delta)
+        else:
+            annot = np.vectorize(lambda x: f"{int(x)}")(original_df + delta)
 
-        int_annot = np.vectorize(lambda x: f"{int(x)}")(df + delta)
-        sns.heatmap(df + delta, vmax=vmax, vmin=vmin, annot=int_annot, cmap='coolwarm', annot_kws={"color": 'white', "size": 7, "fontweight": 800}, fmt='', linewidths=1, norm=norm)
+        min_log_scale = 1
+        norm = LogNorm(vmin=vmin + delta + min_log_scale, vmax=vmax + delta) if log_scale else None
+
+        
+        sns.heatmap((df_copy if relative else original_df) + delta, vmax=vmax, vmin=vmin, annot=annot, cmap='coolwarm', annot_kws={"color": 'white', "size": 7, "fontweight": 800}, fmt='', linewidths=1, norm=norm)
 
         # Add a title to the heatmap
         plt.title(title, fontsize=20, pad=20)  # Added padding for better visualization
@@ -45,6 +53,7 @@ class PlotOperations:
 
         # Save the plot to a PNG file with high resolution
         plt.savefig(os.path.join(base_result_filepath, fig_name), dpi=self._DPI)
+        
         plt.close()
 
 

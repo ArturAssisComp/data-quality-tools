@@ -1,8 +1,11 @@
 import logging
+from typing import Any
 import matplotlib.pyplot as plt
+from globals.types import SnapshotType
 
 from logger.utils import get_custom_logger_name
-from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotModel
+from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
+from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
 from utils.file_operations import FileOperations
 from utils.plot_operations import PlotOperations
 
@@ -27,30 +30,22 @@ MAX_WIDTH = 25
 X_LABEL = 'Null Per Row'
 TITLE = 'Null Distribution by Row Overview'
 
-class NullDistributionByRowOverviewGenerator:
-    _logger:logging.Logger
-    _fileOperations:FileOperations
+class NullDistributionByRowOverviewGenerator(BaseOverviewGenerator):
+    _needed_snapshots:list[SnapshotType] = [SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
     _plot_operations:PlotOperations
-    _row_null_distribution_snapshot:RowNullDistributionSnapshotModel
-    _row_null_distribution_snapshot_filepath:str
-    _base_result_filepath:str
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations=PlotOperations()):
-        self._logger = logger
-        self._fileOperations = fileOperations
+    def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations=PlotOperations()):
+        super().__init__(snapshot_filepath, logger=logger, fileOperations=fileOperations)
         self._plot_operations = plot_operations
-    
-    def generate_overview(self, row_null_distribution_snapshot_filepath:str, base_result_filepath:str):
-        self._logger.info('Creating overview')
-        self._row_null_distribution_snapshot = RowNullDistributionSnapshotModel(** self._fileOperations.read_Json(row_null_distribution_snapshot_filepath))
-        self._row_null_distribution_snapshot_filepath = row_null_distribution_snapshot_filepath
-        self._base_result_filepath = base_result_filepath
+
+    def _handle_content(self, parsed_content_dict:dict[SnapshotType, Any], basedir_path:str, name_preffix:str=''):
+        rowNullDistributionSnapshotContentModel = parsed_content_dict[SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT]
         try:
             try:
-                self._generate_bar_plot()
+                self._generate_bar_plot(rowNullDistributionSnapshotContentModel, basedir_path, name_preffix=name_preffix)
             finally:
                 plt.close()
             try:
-                self._generate_bar_plot(relative=True)
+                self._generate_bar_plot(rowNullDistributionSnapshotContentModel, basedir_path, relative=True, name_preffix=name_preffix)
             finally:
                 plt.close()
         except Exception as e:
@@ -64,8 +59,8 @@ class NullDistributionByRowOverviewGenerator:
             return basic_check
         return basic_check and max(content.values()) < VALUE_SIZE_LIMIT
 
-    def _generate_bar_plot(self, relative:bool=False):
-        content = self._row_null_distribution_snapshot.content
+    def _generate_bar_plot(self, row_null_distribution_snapshot_content_model:RowNullDistributionSnapshotContent, basedir_path:str, name_preffix:str = '', relative:bool=False):
+        content = row_null_distribution_snapshot_content_model.content
         content = dict(sorted(content.items()))
 
         total_nulls = sum(k * v for k, v in content.items())
@@ -81,7 +76,11 @@ class NullDistributionByRowOverviewGenerator:
         has_label_on_top = self._should_add_label_on_top(content, relative)
 
 
-        self._plot_operations.plot_figure(x, y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, settings['fig_name'], relative, settings['suffix'], self._base_result_filepath)
+        fig_name = name_preffix + settings['fig_name']
+        self._plot_operations.plot_figure(x, y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, fig_name, relative, settings['suffix'], basedir_path)
 
-        self._logger.info(f'{settings["fig_name"]} generated!')
+        self._logger.info(f'{fig_name} generated!')
+
+
+
 

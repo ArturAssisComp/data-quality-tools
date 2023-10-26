@@ -1,8 +1,11 @@
 import logging
+from typing import Any
 import matplotlib.pyplot as plt
+from globals.types import SnapshotType
 
 from logger.utils import get_custom_logger_name
-from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotModel
+from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
+from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
 from utils.file_operations import FileOperations
 from utils.plot_operations import PlotOperations
 
@@ -27,35 +30,27 @@ VALUE_SIZE_LIMIT = 1000
 X_LABEL = 'Null Per Column'
 TITLE = 'Ranked Null Count by Column Overview'
 
-class RankedNullCountByColumnOverviewGenerator:
-    _logger:logging.Logger
-    _fileOperations:FileOperations
+
+class RankedNullCountByColumnOverviewGenerator(BaseOverviewGenerator):
     _plot_operations:PlotOperations
-    _column_null_count_snapshot:ColumnNullCountSnapshotModel
-    _column_null_count_snapshot_filepath:str
-    _base_result_filepath:str
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations = PlotOperations()):
-        self._logger = logger
-        self._fileOperations = fileOperations
+    _needed_snapshots:list[SnapshotType] = [SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
+    def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations=PlotOperations()):
+        super().__init__(snapshot_filepath, logger=logger, fileOperations=fileOperations)
         self._plot_operations = plot_operations
     
-    def generate_overview(self, column_null_count_snapshot_filepath:str, base_result_filepath:str):
-        self._logger.info('Creating overview')
-        self._column_null_count_snapshot = ColumnNullCountSnapshotModel(** self._fileOperations.read_Json(column_null_count_snapshot_filepath))
-        self._column_null_count_snapshot_filepath = column_null_count_snapshot_filepath
-        self._base_result_filepath = base_result_filepath
+    def _handle_content(self, parsed_content_dict:dict[SnapshotType, Any], basedir_path:str, name_preffix:str=''):
+        column_null_count_snapshot_content = parsed_content_dict[SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
         try:
             try:
-                self._generate_bar_plot()
+                self._generate_bar_plot(column_null_count_snapshot_content, basedir_path, name_preffix=name_preffix)
             finally:
                 plt.close()
             try:
-                self._generate_bar_plot(relative=True)
+                self._generate_bar_plot(column_null_count_snapshot_content, basedir_path, relative=True, name_preffix=name_preffix)
             finally:
                 plt.close()
         except Exception as e:
             self._logger.error(f'Result not generated: {e}')
-
 
 
     def _should_add_label_on_top(self, content:dict, relative:bool):
@@ -64,8 +59,8 @@ class RankedNullCountByColumnOverviewGenerator:
             return basic_check
         return basic_check and max(content.values()) < VALUE_SIZE_LIMIT
 
-    def _generate_bar_plot(self, relative:bool=False):
-        content = self._column_null_count_snapshot.content
+    def _generate_bar_plot(self,column_null_count_snapshot_content_model:ColumnNullCountSnapshotContent, basedir_path:str, name_preffix:str='', relative:bool=False):
+        content = column_null_count_snapshot_content_model.content
         keys:list[str] = []
         values:list[int] = []
         for key, value in sorted(content.items(), key=lambda x:x[1], reverse=True):
@@ -90,7 +85,11 @@ class RankedNullCountByColumnOverviewGenerator:
         
         has_label_on_top = self._should_add_label_on_top(content, relative)
 
-        self._plot_operations.plot_figure(list(range(len(x))), y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, settings['fig_name'], relative, settings['suffix'], self._base_result_filepath, x_labels=x)
+        self._plot_operations.plot_figure(list(range(len(x))), y, settings['y_label'], X_LABEL, TITLE, average_value, has_label_on_top, name_preffix + settings['fig_name'], relative, settings['suffix'], basedir_path, x_labels=x)
 
         self._logger.info(f'{settings["fig_name"]} generated!')
+
+
+
+
 

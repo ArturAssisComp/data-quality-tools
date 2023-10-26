@@ -8,6 +8,7 @@ class ManagerArguments (BaseModel):
     documentation: str = ''
     dataset: list[str]
     output_path: str = ''
+    sample: str = ''
 
     @field_validator('documentation')
     def check_documentation(cls, v):

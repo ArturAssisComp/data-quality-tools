@@ -29,9 +29,6 @@ class Manager:
         except Exception as e:
             logger.error(f'Error while reading arguments: {e}')
             raise
-        logger.debug(f'Manager arguments: {self.manager_arguments}')
-        logger.debug(f'Tool arguments: {self.tool_arguments}')
-
         self._process_tool_request()
 
 
