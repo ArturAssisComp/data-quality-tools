@@ -2,7 +2,6 @@ import logging
 import time
 from typing import Callable
 
-from tools.null_value_inspector.snapshot.base_model import BaseSnapshotModel
 from tools.null_value_inspector.snapshot.model.snapshot_model import  SnapshotModel
 
 from globals.types import SnapshotType 
@@ -25,8 +24,6 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 class BaseSnapshot:
     _logger:logging.Logger
     _file_operations:FileOperations
-    # TODO current_refactoring: _snapshot_model2 will replace _snapshot_model when this session is over
-    _snapshot_model:BaseSnapshotModel
     _model:SnapshotModel 
     _state:types.State
     _documentation:Documentation
@@ -50,7 +47,6 @@ class BaseSnapshot:
             if self._documentation.column is None:
                 self._logger.error('Invalid documentation for subset-mode: columns expected')
                 raise RuntimeError("Invalid documentation")
-            self._snapshot_model.columns = self._documentation.column.copy() # TODO current_refactoring: remove this line
             self._model.columns = self._documentation.column.copy()
         elif self._documentation.column is None:
             self._state = 'free-mode'
@@ -58,17 +54,11 @@ class BaseSnapshot:
         else:
             self._state = 'strict-mode'
             self._logger.info('Executing in STRICT MODE')
-            self._snapshot_model.columns = self._documentation.column.copy() # TODO current_refactoring: remove this line
             self._model.columns = self._documentation.column.copy()
-        self._snapshot_model.state = self._state # TODO current_refactoring: remove this line
         self._model.state = self._state
     
     
 
-    # TODO current_refactoring: _reset_snapshot_model will be replaced by _init_snapshot_model
-    def _reset_snapshot_model(self):
-        ''' Executed before creating the snapshot '''
-        raise NotImplementedError('Implement this method')
 
     
     def _init_snapshot_model(self):
@@ -78,34 +68,21 @@ class BaseSnapshot:
 
     def create_snapshot(self, dataset: list[str], snapshot_path: str, documentation:Documentation, samples:list[str|int] | None):
         self._documentation = documentation
-        self._reset_snapshot_model() # TODO current_refactoring: remove this later
         self._init_snapshot_model()
         self._set_state()
         self._logger.info(f'Creating {self._name}')
-        #self._file_operations.loop_through_dataset(dataset, self.process_dataframe) # eliminate in the future
         # loop through the dataset returning csv files that are valid
         for csv_file in self._file_operations.dataset_csv_generator(dataset):
             if csv_file:
                 self.process_csv_file(csv_file, samples)
-        #self._save_snapshot_to_json(snapshot_path)
-        self._save_snapshot_to_json2(snapshot_path)
+        self._save_snapshot_to_json(snapshot_path)
 
-    def _save_snapshot_to_json2(self, snapshot_path:str):
-        # specify the output file path
-        output_file = os.path.join(snapshot_path, self._filename)
-
-        try:
-            self._file_operations.to_json(output_file, self._model.model_dump())
-            self._logger.info(f'\'{os.path.basename(output_file)}\' created!')
-        except Exception as e:
-            self._logger.error(f'Error while creating snapshot json: {e}')
-            raise
     def _save_snapshot_to_json(self, snapshot_path:str):
         # specify the output file path
         output_file = os.path.join(snapshot_path, self._filename)
 
         try:
-            self._file_operations.to_json(output_file, self._snapshot_model.model_dump())
+            self._file_operations.to_json(output_file, self._model.model_dump())
             self._logger.info(f'\'{os.path.basename(output_file)}\' created!')
         except Exception as e:
             self._logger.error(f'Error while creating snapshot json: {e}')
@@ -190,42 +167,13 @@ class BaseSnapshot:
     def _process_dataframe_in_chunks(self, target_file_path:str, chunksize:int, content:dict, files:list, state:types.State, documentation:Documentation, generator_func:Callable, sample_str:str='', **kwargs):
         initial_time = time.time()
         for df in generator_func(target_file_path, chunksize=chunksize, dtype=str, **kwargs):
-            self._perform_specific_processing2(df, content, state, documentation)
+            self.perform_specific_processing(df, content, state, documentation)
         files.append(target_file_path)
         final_time = time.time()
         self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s) ({sample_str})')
 
-    def process_dataframe(self, file_path: str, df: pd.DataFrame, snapshot:BaseSnapshotModel|None=None, documentation:Documentation|None=None, state:types.State|None=None):
-        """
-        Process a dataframe to extract snapshot data.
 
-        ## Parameters
-        - filename: The name of the source file.
-        - df: The dataframe to be processed.
-        - snapshot_path: Path to save the snapshot.
-        """
-        documentation = documentation or self._documentation
-        state = state or self._state
-        snapshot = snapshot or self._snapshot_model
-
-        if self._file_will_be_processed(documentation, state, df):
-            try:
-                initial_time = time.time()
-                self._perform_specific_processing(df, snapshot, state, documentation)
-                snapshot.files.append(file_path)
-                final_time = time.time()
-                self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s)')
-
-            except Exception as e:
-                self._logger.error(f'Error while processing the file ({file_path}): {e}')
-        else:
-            self._logger.warning(f'SKIPPED! X')
-
-    def _perform_specific_processing(self, df:pd.DataFrame, snapshot:BaseSnapshotModel, state:types.State, documentation:Documentation):
-        raise NotImplementedError('specific processing')
-
-
-    def _perform_specific_processing2(self, df:pd.DataFrame, content:dict, state:types.State, documentation:Documentation):
+    def perform_specific_processing(self, df:pd.DataFrame, content:dict, state:types.State, documentation:Documentation):
         raise NotImplementedError('specific processing')
         
 

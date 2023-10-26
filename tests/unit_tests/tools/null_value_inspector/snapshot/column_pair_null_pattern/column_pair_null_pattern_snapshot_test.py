@@ -7,7 +7,6 @@ import copy
 
 from tools.null_value_inspector.snapshot.column_pair_null_pattern.column_pair_null_pattern_snapshot import ColumnPairNullPatternSnapshot
 from utils.file_operations import FileOperations
-import tools.null_value_inspector.snapshot.column_pair_null_pattern.model.model as model 
 from tools.null_value_inspector.model.documentation import Documentation
 import tools.null_value_inspector.snapshot.types as types 
 
@@ -62,8 +61,7 @@ class TestColumnPairNullPatternSnapshot:
     def test_process_dataframe(self, _, documentation:Documentation, df_dict:dict, initial_content:dict, final_content:dict):
         mock_logger = Mock(spec=logging.Logger)
         mock_file_operations = Mock(spec=FileOperations)
-        snapshot = model.ColumnPairNullPatternSnapshotModel.get_basic_instance()
-        snapshot.content = copy.deepcopy(initial_content)
+        content = copy.deepcopy(initial_content)
         snapshotBuilder = ColumnPairNullPatternSnapshot(logger=mock_logger, fileOperations=mock_file_operations)
         df = pd.DataFrame(df_dict)
         state:types.State
@@ -74,5 +72,5 @@ class TestColumnPairNullPatternSnapshot:
         else:
             state = 'free-mode'
 
-        snapshotBuilder.process_dataframe('filename', df, snapshot=snapshot, documentation=documentation, state=state)
-        assert  snapshot.content == final_content
+        snapshotBuilder.perform_specific_processing( df, content, documentation=documentation, state=state)
+        assert  content == final_content

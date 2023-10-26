@@ -13,7 +13,7 @@ from utils.str_operations import parse_samples
 # tools
 from tools.null_value_inspector.result_generator.null_distribution_by_row.generator import NullDistributionByRowOverviewGenerator
 from tools.null_value_inspector.result_generator.statistical_summary.generator import StatisticalSummaryOverviewGenerator
-from tools.null_value_inspector.result_generator.ranked_null_count_by_column.generator import RankedNullCountByColumnOverviewGenerator2
+from tools.null_value_inspector.result_generator.ranked_null_count_by_column.generator import RankedNullCountByColumnOverviewGenerator
 from tools.null_value_inspector.result_generator.null_frequent_pairs.generator import NullFrequentPairsOverviewGenerator
 from utils.file_operations import FileOperations
 
@@ -36,7 +36,6 @@ class NullValueInspector(BaseToolClass):
     _file_operations:FileOperations
     _samples:list[str | int] | None
     def __init__(self, file_operations:FileOperations=FileOperations()):
-        self._row_null_distribution_snapshot_path = None
         self._file_operations = file_operations
 
 
@@ -152,7 +151,7 @@ class NullValueInspector(BaseToolClass):
                     snapshot_path_map = {
                         SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT: self._column_null_count_snapshot_path, 
                     }
-                    RankedNullCountByColumnOverviewGenerator2(snapshot_path_map).generate_overview(self._base_result_path)
+                    RankedNullCountByColumnOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path)
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
             else:

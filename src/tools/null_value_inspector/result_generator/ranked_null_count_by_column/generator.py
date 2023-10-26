@@ -31,7 +31,7 @@ X_LABEL = 'Null Per Column'
 TITLE = 'Ranked Null Count by Column Overview'
 
 
-class RankedNullCountByColumnOverviewGenerator2(BaseOverviewGenerator):
+class RankedNullCountByColumnOverviewGenerator(BaseOverviewGenerator):
     _plot_operations:PlotOperations
     _needed_snapshots:list[SnapshotType] = [SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
     def __init__(self,snapshot_filepath:dict[SnapshotType, str], logger:logging.Logger = logger, fileOperations:FileOperations=FileOperations(), plot_operations:PlotOperations=PlotOperations()):

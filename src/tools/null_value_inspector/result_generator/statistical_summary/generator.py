@@ -4,8 +4,6 @@ from typing import Any
 
 import numpy as np
 from globals.types import SnapshotType
-from tools.null_value_inspector.snapshot.column_pair_null_pattern.model.model import ColumnPairNullPatternSnapshotContent
-from tools.null_value_inspector.snapshot.model.snapshot_model import SnapshotModel
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
 from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
