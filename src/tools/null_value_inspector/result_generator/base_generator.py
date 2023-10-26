@@ -59,7 +59,7 @@ class BaseOverviewGenerator:
                 for content, type_ in parsed_content:
                     parsed_content_dict[type_] = content
                 self._logger.info(f'processing sample {sample_key}')
-                self._handle_content(parsed_content_dict, basedir_path, name_preffix=f'sample{sample_key.replace('%', 'rel')}-')
+                self._handle_content(parsed_content_dict, basedir_path, name_preffix=f'sample{sample_key.replace('%', 'rel').replace('.', '_')}-')
         else:
             self._logger.error('Invalid snapshot format')
 

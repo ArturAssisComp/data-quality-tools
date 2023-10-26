@@ -45,9 +45,13 @@ class NullFrequentPairsOverviewGenerator(BaseOverviewGenerator):
         df = self._select_top_n_columns(MAX_COLUMNS, df)
         self._plot_operations.plot_heatmap(df, TITLE, basedir_path, name_preffix + FIG_NAME, log_scale=True)
         self._logger.info(f'{FIG_NAME} generated!')
+        self._plot_operations.plot_heatmap(df, TITLE, basedir_path, name_preffix + 'rel_' + FIG_NAME, log_scale=True, relative=True)
+        self._logger.info(f'{ 'rel_' + FIG_NAME} generated!')
 
         self._plot_operations.plot_heatmap(self._select_top_n_columns(10, df), TOP_10_TITLE, basedir_path, name_preffix + TOP_10_FIG_NAME)
         self._logger.info(f'{TOP_10_FIG_NAME} generated!')
+        self._plot_operations.plot_heatmap(self._select_top_n_columns(10, df), TOP_10_TITLE, basedir_path, name_preffix + 'rel_' + TOP_10_FIG_NAME, relative=True)
+        self._logger.info(f'{'rel_' + TOP_10_FIG_NAME} generated!')
 
 
     def _select_top_n_columns(self, n:int, df:pd.DataFrame):
