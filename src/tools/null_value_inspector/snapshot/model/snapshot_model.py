@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-import tools.null_value_inspector.snapshot.types as types
-from globals.types import SnapshotType 
+from globals.types import SnapshotMode, SnapshotType 
 
 
 class SnapshotModel(BaseModel):
@@ -11,7 +10,7 @@ class SnapshotModel(BaseModel):
     '''
     type:SnapshotType
     files:list[str] = list()
-    state:types.State = 'initial'
+    state:SnapshotMode
     columns:list[str] = list()
     samples:dict[str, dict] | None = None
     population: dict | None = None
