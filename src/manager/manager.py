@@ -11,6 +11,11 @@ from tools.null_value_inspector.constants import CONSTANTS as NULL_VALUE_INSPECT
 from tools.null_value_inspector.model.tool_arguments import ToolArguments as null_value_inspector_tool_arguments
 from tools.null_value_inspector.null_value_inspector import NullValueInspector
 
+# data consistency inspector
+from tools.data_consistency_inspector.constants import CONSTANTS as DATA_CONSISTENCY_INSPECTOR_CONSTANTS
+from tools.data_consistency_inspector.model.tool_arguments import ToolArguments as data_consistency_inspector_tool_arguments
+from tools.data_consistency_inspector.data_consistency_inspector import DataConsistencyInspector 
+
 logger = logging.getLogger(get_custom_logger_name(__name__))
 
 
@@ -45,6 +50,9 @@ class Manager:
             case NULL_VALUE_INSPECTOR_CONSTANTS.tool_name | NULL_VALUE_INSPECTOR_CONSTANTS.alias:
                 self.tool_arguments = null_value_inspector_tool_arguments(**raw_user_request)
                 self.tool_class = NullValueInspector
+            case DATA_CONSISTENCY_INSPECTOR_CONSTANTS.tool_name | DATA_CONSISTENCY_INSPECTOR_CONSTANTS.alias:
+                self.tool_arguments = data_consistency_inspector_tool_arguments(**raw_user_request)
+                self.tool_class = DataConsistencyInspector
             case None:
                 logger.error('Tool name is required')
                 raise ValueError
