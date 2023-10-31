@@ -4,11 +4,11 @@ from unittest.mock import Mock
 import pandas as pd
 import numpy as np
 import copy
+from globals.types import SnapshotMode
 
 from tools.null_value_inspector.snapshot.column_pair_null_pattern.column_pair_null_pattern_snapshot import ColumnPairNullPatternSnapshot
 from utils.file_operations import FileOperations
 from tools.null_value_inspector.model.documentation import Documentation
-import tools.null_value_inspector.snapshot.types as types 
 
 
 
@@ -64,13 +64,13 @@ class TestColumnPairNullPatternSnapshot:
         content = copy.deepcopy(initial_content)
         snapshotBuilder = ColumnPairNullPatternSnapshot(logger=mock_logger, fileOperations=mock_file_operations)
         df = pd.DataFrame(df_dict)
-        state:types.State
+        state:SnapshotMode
         if documentation.is_subset_mode:
-            state = 'subset-mode'
+            state = SnapshotMode.SUBSET_MODE
         elif documentation.column:
-            state = 'strict-mode'
+            state = SnapshotMode.STRICT_MODE
         else:
-            state = 'free-mode'
+            state = SnapshotMode.FREE_MODE
 
         snapshotBuilder.perform_specific_processing( df, content, documentation=documentation, state=state)
         assert  content == final_content

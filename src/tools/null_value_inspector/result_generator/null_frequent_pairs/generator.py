@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from globals.types import SnapshotType
 
-from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
+from tools.base_result_generator.base_generator import BaseOverviewGenerator
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.snapshot.column_pair_null_pattern.model.model import ColumnPairNullPatternSnapshotContent
 from utils.file_operations import FileOperations

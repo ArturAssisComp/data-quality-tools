@@ -1,8 +1,8 @@
 from typing import Type
-from pydantic import BaseModel
 import logging
 
-from globals.interfaces import BaseToolClass
+from tools.base_tool import BaseToolClass
+from tools.base_tool_arguments import BaseToolArguments
 from manager.models.manager_arguments import ManagerArguments
 from logger.utils import get_custom_logger_name
 ## Tools:
@@ -18,7 +18,7 @@ logger = logging.getLogger(get_custom_logger_name(__name__))
 
 class Manager:
     manager_arguments: ManagerArguments
-    tool_arguments: BaseModel
+    tool_arguments: BaseToolArguments
     tool_class: Type[BaseToolClass]
     
 

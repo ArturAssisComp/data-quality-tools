@@ -5,8 +5,8 @@ from globals.types import SnapshotType
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
 from tools.null_value_inspector.snapshot.column_pair_null_pattern.model.model import ColumnPairNullPatternSnapshotContent
-from tools.null_value_inspector.snapshot.model.snapshot_model import SnapshotModel
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
+from tools.base_snapshot.model.snapshot_model import SnapshotModel
 from utils.file_operations import FileOperations
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 2, 'last'))

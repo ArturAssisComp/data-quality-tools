@@ -1,12 +1,10 @@
 import logging
 
-import numpy as np
-from globals.types import SnapshotType, get_snapshot_name
-from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
+from globals.types import SnapshotMode, SnapshotType, get_snapshot_name
+from tools.base_snapshot.base_snapshot import BaseSnapshot
 
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation
-import tools.null_value_inspector.snapshot.types as types
 import pandas as pd
 from utils.file_operations import FileOperations 
 
@@ -20,17 +18,9 @@ class ColumnPairNullPatternSnapshot(BaseSnapshot):
 
 
 
-    def perform_specific_processing(self, df:pd.DataFrame, content:dict[str, dict[str, int]], state:types.State, documentation:Documentation):
-        if state == 'subset-mode':
-            if documentation.column:
-                # TODO refactor: extract function (this code is used in 3 methods)
-                missing_columns = set(documentation.column) - set(df.columns)
-                if missing_columns:
-                    df = df.assign(**{col:np.nan for col in missing_columns})
-                df = df[documentation.column]
-            else:
-                raise RuntimeError('Invalid documentation: expected columns when in subset-mode')
-
+    def perform_specific_processing(self, df:pd.DataFrame, content:dict[str, dict[str, int]], state:SnapshotMode, documentation:Documentation):
+        if state == SnapshotMode.SUBSET_MODE:
+            df = self._get_subset_columns(df, documentation.column)
         # TODO refactor
         if len(df) > 0:
             for n, col1 in enumerate(df.columns):
