@@ -2,8 +2,14 @@ import argparse
 import logging
 import sys
 
+# tool: null value inspector
 from tools.null_value_inspector.constants import CONSTANTS as NULL_VALUE_INSPECTOR_CONSTANTS 
 from tools.null_value_inspector.arguments import add_arguments as null_value_inspector_add_arguments
+
+# tool: null value inspector
+from tools.data_consistency_inspector.constants import CONSTANTS as DATA_CONSISTENCY_INSPECTOR_CONSTANTS
+from tools.data_consistency_inspector.arguments import add_arguments as data_consistency_inspector_add_arguments
+
 from manager.arguments import add_arguments as manager_add_arguments
 from manager.manager import Manager
 from logger.config_logger import configure_logger 
@@ -43,10 +49,12 @@ def add_tools_subparsers(parser:argparse.ArgumentParser):
                                                         help="Tool: Null Value Inspector")
     null_value_inspector_add_arguments(null_value_inspector_parser)
     
-    # hello world tool subparser
-    hello_world_parser = subparsers.add_parser("hello-world", help="Tool: Hello World")
-    hello_world_group = hello_world_parser.add_argument_group('Hello World Settings')
-    hello_world_group.add_argument("abc", type=str, help="Hello World")
+    # Data Consistency Inspector tool subparser with alias
+    data_consistency_inspector_parser = subparsers.add_parser(DATA_CONSISTENCY_INSPECTOR_CONSTANTS.tool_name,
+                                                              aliases=[DATA_CONSISTENCY_INSPECTOR_CONSTANTS.alias],
+                                                              help='Tool: Data Consistency Inspector')
+    data_consistency_inspector_add_arguments(data_consistency_inspector_parser)
+
 
 
 def process_arguments(args:argparse.Namespace):
