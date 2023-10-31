@@ -1,7 +1,7 @@
 import logging
 
 from globals.types import SnapshotMode, SnapshotType, get_snapshot_name
-from tools.null_value_inspector.snapshot.base_snapshot import BaseSnapshot
+from tools.base_snapshot.base_snapshot import BaseSnapshot
 
 from logger.utils import get_custom_logger_name
 from tools.null_value_inspector.model.documentation import Documentation

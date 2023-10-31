@@ -4,7 +4,7 @@ from typing import Callable
 
 import numpy as np
 
-from tools.null_value_inspector.snapshot.model.snapshot_model import  SnapshotModel
+from tools.base_snapshot.model.snapshot_model import SnapshotModel
 
 from globals.types import SnapshotType, SnapshotMode 
 from utils.file_operations import FileOperations
