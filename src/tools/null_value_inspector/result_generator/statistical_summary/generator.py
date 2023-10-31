@@ -6,7 +6,7 @@ import numpy as np
 from globals.types import SnapshotType
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
-from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
+from tools.base_result_generator.base_generator import BaseOverviewGenerator
 
 from utils.file_operations import FileOperations
 from logger.utils import get_custom_logger_name

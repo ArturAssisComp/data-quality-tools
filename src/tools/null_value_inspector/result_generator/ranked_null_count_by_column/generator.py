@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from globals.types import SnapshotType
 
 from logger.utils import get_custom_logger_name
-from tools.null_value_inspector.result_generator.base_generator import BaseOverviewGenerator
+from tools.base_result_generator.base_generator import BaseOverviewGenerator
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
 from utils.file_operations import FileOperations
 from utils.plot_operations import PlotOperations
