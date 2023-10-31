@@ -42,6 +42,7 @@ class BaseSnapshot:
         return self._filename
     
 
+    # TODO make this specific to the nvi base_snapshot tool because it will be different for data consistency tool
     def _set_state(self):
         if self._documentation.is_subset_mode:
             self._state = SnapshotMode.SUBSET_MODE
