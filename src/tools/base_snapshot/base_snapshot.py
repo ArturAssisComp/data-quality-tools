@@ -10,7 +10,7 @@ from globals.types import SnapshotType, SnapshotMode
 from utils.file_operations import FileOperations
 from utils.str_operations import get_int_or_float
 from logger.utils import get_custom_logger_name
-from tools.null_value_inspector.model.documentation import Documentation
+from pydantic import BaseModel
 import pandas as pd
 import os
 
@@ -27,7 +27,7 @@ class BaseSnapshot:
     _file_operations:FileOperations
     _model:SnapshotModel 
     _state:SnapshotMode
-    _documentation:Documentation
+    _documentation:BaseModel
     _name:str
     _type:SnapshotType
     _filename:str
@@ -42,23 +42,8 @@ class BaseSnapshot:
         return self._filename
     
 
-    # TODO make this specific to the nvi base_snapshot tool because it will be different for data consistency tool
     def _set_state(self):
-        if self._documentation.is_subset_mode:
-            self._state = SnapshotMode.SUBSET_MODE
-            if self._documentation.column is None:
-                self._logger.error('Invalid documentation for subset-mode: columns expected')
-                raise RuntimeError("Invalid documentation")
-            self._model.columns = self._documentation.column.copy()
-        elif self._documentation.column is None:
-            self._state = SnapshotMode.FREE_MODE
-            self._logger.warning('Executing in FREE MODE')
-        else:
-            self._state = SnapshotMode.STRICT_MODE
-            self._logger.info('Executing in STRICT MODE')
-            self._model.columns = self._documentation.column.copy()
-        self._model.state = self._state
-        self._model = SnapshotModel(**self._model.model_dump()) # this is necessary to revalidate the enum field
+        raise NotADirectoryError('Should Implement')
     
 
     def _get_subset_columns(self, df:pd.DataFrame, columns:list[str] | None):
@@ -78,7 +63,7 @@ class BaseSnapshot:
         self._model = SnapshotModel(type=self._type, state=SnapshotMode.INITIAL)
 
 
-    def create_snapshot(self, dataset: list[str], snapshot_path: str, documentation:Documentation, samples:list[str|int] | None):
+    def create_snapshot(self, dataset: list[str], snapshot_path: str, documentation:BaseModel, samples:list[str|int] | None):
         self._documentation = documentation
         self._init_snapshot_model()
         self._set_state()
@@ -100,7 +85,7 @@ class BaseSnapshot:
             self._logger.error(f'Error while creating snapshot json: {e}')
             raise
 
-    def _file_will_be_processed(self, documentation:Documentation, state:SnapshotMode, df:pd.DataFrame):
+    def _file_will_be_processed(self, documentation:BaseModel, state:SnapshotMode, df:pd.DataFrame):
         match state:
             case SnapshotMode.INITIAL:
                 self._logger.error('Inconsistent state. Should be free-mode or strict-mode')
@@ -109,19 +94,9 @@ class BaseSnapshot:
                 return self._file_will_be_processed_strict_mode(documentation, df)
         return True
     
-    def _file_will_be_processed_strict_mode(self, documentation:Documentation, df:pd.DataFrame):
+    def _file_will_be_processed_strict_mode(self, documentation:BaseModel, df:pd.DataFrame):
         ''' Check if the file will be processed if the state is strict-mode '''
-        file_will_be_processed:bool = True
-        if documentation.column:
-            columns = set(documentation.column)
-            df_columns = set(df.columns)
-            if columns != df_columns:
-                file_will_be_processed = False
-                self._log_difference_column_set(df_columns, columns)
-        else:
-            self._logger.error('Inconsistent documentation')
-            raise RuntimeError
-        return file_will_be_processed
+        raise NotImplementedError('should implement')
     
     def _log_difference_column_set(self, c1:set, c2:set):
         more = c1 -c2 
@@ -133,7 +108,7 @@ class BaseSnapshot:
         if more_str or less_str:
             self._logger.warning(f'Invalid columns: {more_str} {less_str}')
 
-    def process_csv_file(self, file_path: str, samples:list[int|str]|None, snapshot:SnapshotModel|None=None, documentation:Documentation|None=None, state:SnapshotMode|None=None):
+    def process_csv_file(self, file_path: str, samples:list[int|str]|None, snapshot:SnapshotModel|None=None, documentation:BaseModel|None=None, state:SnapshotMode|None=None):
         """
         Process a csv file to extract snapshot data.
 
@@ -176,7 +151,7 @@ class BaseSnapshot:
         else:
             self._logger.warning(f'SKIPPED! X')
 
-    def _process_dataframe_in_chunks(self, target_file_path:str, chunksize:int, content:dict, files:list, state:SnapshotMode, documentation:Documentation, generator_func:Callable, sample_str:str='', **kwargs):
+    def _process_dataframe_in_chunks(self, target_file_path:str, chunksize:int, content:dict, files:list, state:SnapshotMode, documentation:BaseModel, generator_func:Callable, sample_str:str='', **kwargs):
         initial_time = time.time()
         for df in generator_func(target_file_path, chunksize=chunksize, dtype=str, **kwargs):
             self.perform_specific_processing(df, content, state, documentation)
@@ -185,7 +160,7 @@ class BaseSnapshot:
         self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s) ({sample_str})')
 
 
-    def perform_specific_processing(self, df:pd.DataFrame, content:dict, state:SnapshotMode, documentation:Documentation):
+    def perform_specific_processing(self, df:pd.DataFrame, content:dict, state:SnapshotMode, documentation:BaseModel):
         raise NotImplementedError('specific processing')
         
 
