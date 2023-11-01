@@ -43,7 +43,7 @@ class BaseSnapshot:
     
 
     def _set_state(self):
-        raise NotADirectoryError('Should Implement')
+        raise NotImplementedError('Should Implement')
     
 
     def _get_subset_columns(self, df:pd.DataFrame, columns:list[str] | None):

@@ -1,29 +1,40 @@
-from typing import TypedDict, Callable, Any
-from pydantic import BaseModel, field_validator
+import re
+from typing import Callable, Any
+from pydantic import BaseModel, validator
 
-class Constraint(TypedDict):
+class RuleProcessor:
+    @staticmethod
+    def validate_rule(rule_str: str) -> bool:
+        if not re.match("^[0-9a-zA-Z_ <>=&|()]+$", rule_str):
+            raise ValueError("Invalid characters in rule")
+        return True
+
+    @staticmethod
+    def create_rule(rule_str: str) -> Callable[[Any], bool]:
+        RuleProcessor.validate_rule(rule_str)
+        return eval(f"lambda x: {rule_str}", {}, {})
+
+class Constraint(BaseModel):
     rule: Callable[[Any], bool]
     name: str
 
-class Column(TypedDict):
+    @validator("rule", pre=True)
+    def validate_rule(cls, v):
+        if isinstance(v, str):
+            return RuleProcessor.create_rule(v)
+        return v
+
+class Column(BaseModel):
     name: str
     type: str 
     constraints: list[Constraint]
     
+class Documentation(BaseModel):
+    columns: list[Column] | None = None
+    is_subset_mode: bool = False
 
-class Documentation (BaseModel):
-    columns:list[Column]|None = None
-    is_subset_mode:bool = False
-
-    class Config:
-        extra = "ignore"
-
-    @field_validator('columns')
-    def validate_column(cls, v):
-        if v is not None:
-            if not v:
-                raise ValueError('Empty documentation')
+    @validator("columns", pre=True)
+    def validate_columns(cls, v):
+        if not v:
+            raise ValueError("Empty documentation")
         return v
-        
-
-
