@@ -14,9 +14,10 @@ class RuleProcessor:
         RuleProcessor.validate_rule(rule_str)
         return eval(f"lambda x: {rule_str}", {}, {})
 
+
 class Constraint(BaseModel):
-    rule: Callable[[Any], bool]
-    name: str
+    rule: Callable[[Any], bool] | None
+    name: str 
 
     @validator("rule", pre=True)
     def validate_rule(cls, v):
@@ -27,7 +28,7 @@ class Constraint(BaseModel):
 class Column(BaseModel):
     name: str
     type: str 
-    constraints: list[Constraint]
+    constraints: list[Constraint] = list()
     
 class Documentation(BaseModel):
     columns: list[Column] | None = None

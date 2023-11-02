@@ -157,7 +157,7 @@ class BaseSnapshot:
             self.perform_specific_processing(df, content, state, documentation)
         files.append(target_file_path)
         final_time = time.time()
-        self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s) ({sample_str})')
+        self._logger.info(f'OK! ✔️   ({final_time - initial_time:.2f} s) {f'({sample_str})' if sample_str else ''}')
 
 
     def perform_specific_processing(self, df:pd.DataFrame, content:dict, state:SnapshotMode, documentation:BaseModel):
