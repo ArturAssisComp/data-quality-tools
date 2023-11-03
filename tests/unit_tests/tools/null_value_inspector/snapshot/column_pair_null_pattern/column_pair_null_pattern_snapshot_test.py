@@ -62,7 +62,7 @@ class TestColumnPairNullPatternSnapshot:
         mock_logger = Mock(spec=logging.Logger)
         mock_file_operations = Mock(spec=FileOperations)
         content = copy.deepcopy(initial_content)
-        snapshotBuilder = ColumnPairNullPatternSnapshot(logger=mock_logger, fileOperations=mock_file_operations)
+        snapshotBuilder = ColumnPairNullPatternSnapshot(documentation, logger=mock_logger, fileOperations=mock_file_operations)
         df = pd.DataFrame(df_dict)
         state:SnapshotMode
         if documentation.is_subset_mode:

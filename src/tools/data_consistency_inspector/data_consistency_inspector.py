@@ -54,8 +54,8 @@ class DataConsistencyInspector(BaseToolClass):
         log_header(logger, 'Initializing Snapshots')
         if self._row_inconsistency_distribution_snapshot_is_necessary(tool_arguments):
             try:
-                rowInconsistencyDistributionSnapshot = RowInconsistencyDistributionSnapshot()
-                rowInconsistencyDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
+                rowInconsistencyDistributionSnapshot = RowInconsistencyDistributionSnapshot(self._documentation)
+                rowInconsistencyDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
                 self._row_inconsistency_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowInconsistencyDistributionSnapshot.get_filename())
             except Exception as e:
                 self._logger.critical(e)

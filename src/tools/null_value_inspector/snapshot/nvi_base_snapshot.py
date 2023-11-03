@@ -20,8 +20,8 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 class NviBaseSnapshot(BaseSnapshot):
     _documentation:Documentation
 
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
-        super().__init__(logger=logger, fileOperations=fileOperations)
+    def __init__(self, documentation:Documentation, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
+        super().__init__(documentation, logger=logger, fileOperations=fileOperations)
 
     def _set_state(self):
         if self._documentation.is_subset_mode:

@@ -32,11 +32,14 @@ class BaseSnapshot:
     _type:SnapshotType
     _filename:str
 
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
+    def __init__(self, documentation:BaseModel, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
         self._logger = logger
         self._file_operations = fileOperations
         self._state = SnapshotMode.INITIAL
         self._filename = ''.join([self._name, '.json'])
+        self._documentation = documentation
+        self._init_snapshot_model()
+        self._set_state()
     
     def get_filename(self):
         return self._filename
@@ -63,10 +66,7 @@ class BaseSnapshot:
         self._model = SnapshotModel(type=self._type, state=SnapshotMode.INITIAL)
 
 
-    def create_snapshot(self, dataset: list[str], snapshot_path: str, documentation:BaseModel, samples:list[str|int] | None):
-        self._documentation = documentation
-        self._init_snapshot_model()
-        self._set_state()
+    def create_snapshot(self, dataset: list[str], snapshot_path: str, samples:list[str|int] | None):
         self._logger.info(f'Creating {self._name}')
         # loop through the dataset returning csv files that are valid
         for csv_file in self._file_operations.dataset_csv_generator(dataset):

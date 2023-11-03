@@ -13,8 +13,8 @@ logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('
 class ColumnPairNullPatternSnapshot(NviBaseSnapshot):
     _type:SnapshotType = SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT
     _name:str = get_snapshot_name(SnapshotType.COLUMN_PAIR_NULL_PATTERN_SNAPSHOT)
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
-        super().__init__(logger=logger, fileOperations=fileOperations)
+    def __init__(self, documentation:Documentation, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
+        super().__init__(documentation, logger=logger, fileOperations=fileOperations)
 
 
 

@@ -7,6 +7,7 @@ from tools.data_consistency_inspector.model.documentation import Constraint
 SPECIAL_RULES = Literal['##not-null##']
 
 
+# TODO refactor
 def is_consistent(value:str, type_:str, constraints:list[Constraint]):
     if value in {np.nan, None}:
         for constraint in constraints:
