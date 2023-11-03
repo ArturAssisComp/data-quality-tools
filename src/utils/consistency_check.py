@@ -1,4 +1,5 @@
 
+from datetime import date
 import numpy as np
 from typing import Any, Literal
 from tools.data_consistency_inspector.model.documentation import Constraint
@@ -85,8 +86,8 @@ def check_type(data_type:CCT, value:str)->tuple[bool, Any]:
             has_correct_type, final_value = _check_float(value)
         case CCT.BOOL | CCT.BOOLEAN:
             has_correct_type, final_value = _check_boolean(value)
-        case CCT.DATE:
-            has_correct_type, final_value = _check_date(value)
+        case CCT.ISO8601_DATE:
+            has_correct_type, final_value = _check_iso8601date(value)
         #Sql Server types
         # Exact numerics
         # not implemented yet
@@ -126,5 +127,11 @@ def _check_boolean(value:str)->tuple[bool, Any]:
         has_correct_type = False
     return has_correct_type, final_value
 
-def _check_date(value:str)->tuple[bool, Any]:
-    return False, None
+def _check_iso8601date(value:str)->tuple[bool, Any]:
+    try:
+        final_value = date.fromisoformat(value)
+        has_correct_type = True
+    except:
+        final_value = None
+        has_correct_type = False
+    return has_correct_type, final_value

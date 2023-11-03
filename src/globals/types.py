@@ -28,7 +28,7 @@ class ConsystencyCheckType(Enum):
     FLOAT   = 'FLOAT'
     BOOL    = 'BOOL'
     BOOLEAN = 'BOOLEAN'
-    DATE    = 'DATE'
+    ISO8601_DATE    = 'ISO8601_DATE'
     # sql server (all the sql server types are prefixed with ss --> sql server)
     ## Exact numerics
     ssBIGINT   = 'ssBIGINT'
