@@ -2,13 +2,14 @@
 import numpy as np
 from typing import Any, Literal
 from tools.data_consistency_inspector.model.documentation import Constraint
+from globals.types import ConsystencyCheckType as CCT
 
 
 SPECIAL_RULES = Literal['##not-null##']
 
 
 # TODO refactor
-def is_consistent(value, type_:str, constraints:list[Constraint]):
+def is_consistent(value, data_type:CCT, constraints:list[Constraint]):
     if value in {np.nan, None}:
         for constraint in constraints:
             if constraint.name == '##not-null##':
@@ -17,11 +18,12 @@ def is_consistent(value, type_:str, constraints:list[Constraint]):
         return True
     # check the type
     value = str(value)
-    has_correct_type, final_value = _check_type(type_, value)
+    has_correct_type, final_value = check_type(data_type, value)
     if not has_correct_type:
         return False
     
     # check the constraints
+    # TODO extract check constraints
     for constraint in constraints:
         if constraint.rule is None:
             continue
@@ -57,40 +59,72 @@ binary & varbinary
 char & varchar
 nchar & nvarchar
 ntext, text, & image
-
 '''
-def _check_type(type_:str, value:str):
+def check_type(data_type:CCT, value:str)->tuple[bool, Any]:
+    '''
+    TODO 
+    ## Exact numerics
+    - [ ] bigint
+    - [ ] numeric
+    - [ ] bit
+    - [ ] smallint
+    - [ ] decimal
+    - [ ] smallmoney
+    - [ ] int
+    - [ ] tinyint
+    - [ ] money
+    '''
     final_value:Any = None
     has_correct_type:bool = False
-    match type_:
-        case 'str' | 'STR' | 'STRING' | 'string':
-            final_value = value
-            has_correct_type = True
-        case 'int' | 'INT' | 'integer' | 'INTEGER':
-            try:
-                final_value = int(value)
-                has_correct_type = True
-            except:
-                final_value = None
-                has_correct_type = False
-        case 'float' | 'FLOAT':
-            try:
-                final_value = float(value)
-                has_correct_type = True
-            except:
-                final_value = None
-                has_correct_type = False
-        case 'bool' | 'BOOL' | 'boolean' | 'BOOLEAN':
-            if value in {'true', 'True', 'TRUE'}:
-                final_value = True
-                has_correct_type = True
-            elif value in {'false', 'False', 'FALSE'}:
-                final_value = False
-                has_correct_type = True
-            else:
-                final_value = None
-                has_correct_type = False
+    match data_type:
+        case CCT.STR | CCT.STRING:
+            has_correct_type, final_value = True, value
+        case CCT.INT | CCT.INTEGER:
+            has_correct_type, final_value = _check_int(value)
+        case CCT.FLOAT:
+            has_correct_type, final_value = _check_float(value)
+        case CCT.BOOL | CCT.BOOLEAN:
+            has_correct_type, final_value = _check_boolean(value)
+        case CCT.DATE:
+            has_correct_type, final_value = _check_date(value)
+        #Sql Server types
+        # Exact numerics
+        # not implemented yet
         case _:
-            final_value = None
-            has_correct_type = False
+            raise NotImplementedError(f'Type not implemented yet: {data_type}')
     return has_correct_type, final_value
+
+
+def _check_int(value:str)->tuple[bool, Any]:
+    try:
+        final_value = int(value)
+        has_correct_type = True
+    except:
+        final_value = None
+        has_correct_type = False
+    return has_correct_type, final_value
+
+
+def _check_float(value:str)->tuple[bool, Any]:
+    try:
+        final_value = float(value)
+        has_correct_type = True
+    except:
+        final_value = None
+        has_correct_type = False
+    return has_correct_type, final_value
+
+def _check_boolean(value:str)->tuple[bool, Any]:
+    if value in {'true', 'True', 'TRUE'}:
+        final_value = True
+        has_correct_type = True
+    elif value in {'false', 'False', 'FALSE'}:
+        final_value = False
+        has_correct_type = True
+    else:
+        final_value = None
+        has_correct_type = False
+    return has_correct_type, final_value
+
+def _check_date(value:str)->tuple[bool, Any]:
+    return False, None

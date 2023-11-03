@@ -15,6 +15,44 @@ class SnapshotMode(Enum):
     STRICT_MODE = 'strict-mode'
     SUBSET_MODE = 'subset-mode'
 
-
 def get_snapshot_name(type:SnapshotType):
     return type.value.replace('_', '-')
+
+# Consistency check types
+class ConsystencyCheckType(Enum):
+    # python types
+    STR     = 'STR'
+    STRING  = 'STRING'
+    INT     = 'INT'
+    INTEGER = 'INTEGER'
+    FLOAT   = 'FLOAT'
+    BOOL    = 'BOOL'
+    BOOLEAN = 'BOOLEAN'
+    DATE    = 'DATE'
+    # sql server (all the sql server types are prefixed with ss --> sql server)
+    ## Exact numerics
+    ssBIGINT   = 'ssBIGINT'
+    ssNUMERIC  = 'ssNUMERIC'
+    ssBIT      = 'ssBIT'
+    ssINT      = 'ssINT'
+    ssSMALLINT = 'ssSMALLINT'
+    ssDECIMAL  = 'ssDECIMAL'
+    ssSMALLMONEY = 'ssSMALLMONEY'
+    ssTINYINT = 'ssTINYINT'
+    ssMONEY   = 'ssMONEY'
+    ## Approximate numerics
+    ssFLOAT = 'ssFLOAT'
+    ssREAL  = 'ssREAL'
+    ## Date and Time
+    ssDATE = 'ssDATE'
+    ssDATETIMEOFFSET = 'ssDATETIMEOFFSET'
+    ssDATETIME       = 'ssDATETIME'
+    ssSMALLDATETIME  = 'ssSMALLDATETIME'
+    ssTIME = 'ssTIME'
+    ## Character strings
+    ssCHAR    = 'ssCHAR' 
+    ssVARCHAR = 'ssVARCHAR'
+    ssTEXT    = 'ssTEXT'
+    ## Binary Strings
+    ssBINARY    = 'ssBINARY'
+    ssVARBINARY = 'ssVARBINARY'

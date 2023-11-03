@@ -2,6 +2,8 @@ import re
 from typing import Callable, Any
 from pydantic import BaseModel, validator
 
+from globals.types import ConsystencyCheckType
+
 class RuleProcessor:
     @staticmethod
     def validate_rule(rule_str: str) -> bool:
@@ -19,6 +21,9 @@ class Constraint(BaseModel):
     rule: Callable[[Any], bool] | None
     name: str 
 
+    class Config:
+        extra = 'forbid' 
+
     @validator("rule", pre=True)
     def validate_rule(cls, v):
         if isinstance(v, str):
@@ -27,9 +32,21 @@ class Constraint(BaseModel):
 
 class Column(BaseModel):
     name: str
-    type: str 
+    data_type: ConsystencyCheckType
     constraints: list[Constraint] = list()
-    
+
+    @validator("data_type", pre=True)
+    def validate_columns(cls, v:str):
+        if v.islower():
+            v = v.upper()
+            match v[:2]:
+                case 'SS':
+                    v = 'ss' + v[2:]
+        return v
+
+    class Config:
+        extra = 'forbid' 
+
 class Documentation(BaseModel):
     columns: list[Column] | None = None
     is_subset_mode: bool = False

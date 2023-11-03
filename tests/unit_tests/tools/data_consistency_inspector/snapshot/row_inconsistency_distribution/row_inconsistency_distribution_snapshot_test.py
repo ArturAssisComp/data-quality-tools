@@ -12,7 +12,7 @@ from tools.data_consistency_inspector.model.documentation import Documentation
 
 
 class TestRowNullDistributionSnapshot:
-    strict_mode = Documentation(**{'columns':[{'name':'A', 'type':'str'}], 'is_subset_mode':'true'})
+    strict_mode = Documentation(**{'columns':[{'name':'A', 'data_type':'str'}], 'is_subset_mode':'true'})
     #subset_mode = Documentation(columns=['A', 'C'], is_subset_mode=True)
     df_dict_empty = dict()
     df_dict_one_zero = {'A':[12], 'B':['hi']}
