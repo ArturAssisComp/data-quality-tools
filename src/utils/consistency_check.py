@@ -3,7 +3,7 @@ from datetime import date
 import numpy as np
 from typing import Any, Literal
 from tools.data_consistency_inspector.model.documentation import Constraint
-from globals.types import ConsystencyCheckType as CCT
+from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants
 
 
 SPECIAL_RULES = Literal['##not-null##']
@@ -90,6 +90,8 @@ def check_type(data_type:CCT, value:str)->tuple[bool, Any]:
             has_correct_type, final_value = _check_iso8601date(value)
         #Sql Server types
         # Exact numerics
+        case CCT.ssBIGINT:
+            has_correct_type, final_value = _check_ssBigint(value)
         # not implemented yet
         case _:
             raise NotImplementedError(f'Type not implemented yet: {data_type}')
@@ -130,6 +132,19 @@ def _check_boolean(value:str)->tuple[bool, Any]:
 def _check_iso8601date(value:str)->tuple[bool, Any]:
     try:
         final_value = date.fromisoformat(value)
+        has_correct_type = True
+    except:
+        final_value = None
+        has_correct_type = False
+    return has_correct_type, final_value
+
+
+## sql server types
+def _check_ssBigint(value:str)->tuple[bool, Any]:
+    try:
+        final_value = int(value)
+        if final_value < CCConstants.ssBIGINT_MIN.value or final_value > CCConstants.ssBIGINT_MAX.value:
+            raise ValueError
         has_correct_type = True
     except:
         final_value = None

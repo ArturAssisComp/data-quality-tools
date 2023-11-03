@@ -2,7 +2,7 @@ import math
 from typing import Any
 import pytest
 from utils.consistency_check import check_type
-from globals.types import ConsystencyCheckType as CCT
+from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants
 from datetime import date
 
 
@@ -40,6 +40,21 @@ class TestCheckType:
             ('2023-W44-4', date(2023,11,2)), 
         ],
             ['', '1994-22-03', 'not a date', 'a/b/c', '123/22/12223', '2023-13-01', '2000-02-30']),
+        # sql server types
+        ('ssBIGINT', CCT.ssBIGINT, [
+            ('0', 0), 
+            ('01', 1), 
+            ('-05', -5), 
+            ('10', 10), 
+            (CCConstants.ssBIGINT_MAX_STR.value, CCConstants.ssBIGINT_MAX.value), 
+            (str(CCConstants.ssBIGINT_MAX.value - 1), CCConstants.ssBIGINT_MAX.value - 1), 
+            (CCConstants.ssBIGINT_MIN_STR.value, CCConstants.ssBIGINT_MIN.value), 
+            (str(CCConstants.ssBIGINT_MIN.value + 1), CCConstants.ssBIGINT_MIN.value + 1), 
+            ], 
+            ['', 'not a number', '1.0', '1.00000000000001', '3+4', 
+             str(CCConstants.ssBIGINT_MAX.value + 1),
+             str(CCConstants.ssBIGINT_MIN.value - 1),
+             ]),
     ])
     def test_valid_invalid_cases(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
         for valid_value, expected_valid_value in valid_values_and_expected_values:

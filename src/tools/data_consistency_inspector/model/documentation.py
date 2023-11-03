@@ -2,7 +2,7 @@ import re
 from typing import Callable, Any
 from pydantic import BaseModel, validator
 
-from globals.types import ConsystencyCheckType
+from globals.types import ConsistencyCheckType
 
 class RuleProcessor:
     @staticmethod
@@ -32,7 +32,7 @@ class Constraint(BaseModel):
 
 class Column(BaseModel):
     name: str
-    data_type: ConsystencyCheckType
+    data_type: ConsistencyCheckType
     constraints: list[Constraint] = list()
 
     @validator("data_type", pre=True)

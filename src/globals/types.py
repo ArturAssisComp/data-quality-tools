@@ -19,7 +19,13 @@ def get_snapshot_name(type:SnapshotType):
     return type.value.replace('_', '-')
 
 # Consistency check types
-class ConsystencyCheckType(Enum):
+class ConsistencyCheckConstants(Enum):
+    ssBIGINT_MAX_STR =  '9_223_372_036_854_775_807'
+    ssBIGINT_MIN_STR =  '-9_223_372_036_854_775_808'
+    ssBIGINT_MAX =  9_223_372_036_854_775_807
+    ssBIGINT_MIN =  -9_223_372_036_854_775_808
+
+class ConsistencyCheckType(Enum):
     # python types
     STR     = 'STR'
     STRING  = 'STRING'
