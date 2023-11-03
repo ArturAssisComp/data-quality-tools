@@ -1,3 +1,4 @@
+import math
 from typing import Any
 import pytest
 from utils.consistency_check import check_type
@@ -33,5 +34,24 @@ class TestCheckType:
     def test_valid_invalid_cases(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
         for valid_value, expected_valid_value in valid_values_and_expected_values:
             assert (True, expected_valid_value) == check_type(data_type, valid_value)
+        for invalid_value in invalid_values:
+            assert (False, None) == check_type(data_type, invalid_value)
+    
+    @pytest.mark.parametrize(['_', 'data_type', 'valid_values_and_expected_values', 'invalid_values'], [
+        # Python types
+        ('FLOAT', CCT.FLOAT, [
+            ('0.0', 0.0), 
+            ('1.0', 1.0), 
+            ('-1e3', -1000),
+            ('-1.23456', -1.23456),
+            ('15', 15.0),
+            ], 
+            ['', 'oi']),
+    ])
+    def test_valid_invalid_cases_is_close(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
+        for valid_value, expected_valid_value in valid_values_and_expected_values:
+            is_correct_type, current_valid_value = check_type(data_type, valid_value)
+            assert is_correct_type
+            assert math.isclose(expected_valid_value, current_valid_value)
         for invalid_value in invalid_values:
             assert (False, None) == check_type(data_type, invalid_value)
