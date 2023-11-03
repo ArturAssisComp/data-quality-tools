@@ -25,6 +25,12 @@ class ConsistencyCheckConstants(Enum):
     ssBIGINT_MAX =  9_223_372_036_854_775_807
     ssBIGINT_MIN =  -9_223_372_036_854_775_808
 
+class ConsistencyCheckSpecialRules(Enum):
+    NOT_NULL     = '##NOT-NULL##'
+    FALSE        = '##FALSE##'
+    TRUE         = "##TRUE##"
+    
+
 class ConsistencyCheckType(Enum):
     # python types
     STR     = 'STR'

@@ -1,9 +1,10 @@
 
 from datetime import date
+import re
 import numpy as np
 from typing import Any, Literal
 from tools.data_consistency_inspector.model.documentation import Constraint
-from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants
+from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants, ConsistencyCheckSpecialRules as CCSR
 
 
 SPECIAL_RULES = Literal['##not-null##']
@@ -13,7 +14,7 @@ SPECIAL_RULES = Literal['##not-null##']
 def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:int|None):
     if value in {np.nan, None}:
         for constraint in constraints:
-            if constraint.name == '##not-null##':
+            if constraint.name == CCSR.NOT_NULL.value:
                 return False
             
         return True
@@ -24,7 +25,6 @@ def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:
         return False
     
     # check the constraints
-    # TODO extract check constraints
     for constraint in constraints:
         if constraint.rule is None:
             continue
@@ -34,6 +34,46 @@ def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:
         except:
             return False
     return True
+
+
+def check_constraints(final_value, constraints:list[Constraint]):
+    for constraint in constraints:
+        function_name, args = _extract_function_and_args(constraint.name)
+        if function_name:
+            function_name = ''.join(['##', function_name, '##'])
+            if _handle_special_rules(function_name, args):
+                continue
+            return False
+
+        else:
+            if constraint.rule is None:
+                continue
+            try:
+                if not constraint.rule(final_value):
+                    return False
+            except:
+                return False
+    return True
+
+
+def _handle_special_rules(function_name:str, args:list[str]):
+    match function_name:
+        case CCSR.FALSE.value:
+            return False
+        case CCSR.TRUE.value:
+            return True
+        case _:
+            raise ValueError(f'Invalid special rule: {function_name}')
+
+def _extract_function_and_args(s)->tuple[str|None, list[str]]:
+    pattern = r"^##(.*?)\((.*?)\)##$"
+    match = re.search(pattern, s)
+    if match:
+        function_name = match.group(1)
+        args = match.group(2).split(',')
+        return function_name, [arg.strip() for arg in args]
+    else:
+        return None, [] 
 
 # TODO implement other data types using sql server as base:
 '''
