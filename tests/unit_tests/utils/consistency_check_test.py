@@ -13,6 +13,8 @@ class TestCheckType:
         # Python types
         ('BOOL', CCT.BOOL, [('true', True), ('FALSE', False)], ['tRue', '']),
         ('BOOLEAN', CCT.BOOLEAN, [('TRUE', True), ('false', False)], ['tRue', '']),
+        ('STR', CCT.STR, [('', ''), ('j', 'j'), ('oi', 'oi')], []),
+        ('STRING', CCT.STRING, [('', ''), ('j', 'j'), ('oi', 'oi')], []),
     ])
     def test_valid_invalid_cases(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
         for valid_value, expected_valid_value in valid_values_and_expected_values:
