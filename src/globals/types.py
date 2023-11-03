@@ -35,6 +35,7 @@ class ConsistencyCheckType(Enum):
     BOOL    = 'BOOL'
     BOOLEAN = 'BOOLEAN'
     ISO8601_DATE    = 'ISO8601_DATE'
+    CHAR = 'CHAR'
     # sql server (all the sql server types are prefixed with ss --> sql server)
     ## Exact numerics
     ssBIGINT   = 'ssBIGINT'

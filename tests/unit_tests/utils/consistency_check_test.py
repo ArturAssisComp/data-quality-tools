@@ -58,9 +58,9 @@ class TestCheckType:
     ])
     def test_valid_invalid_cases(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
         for valid_value, expected_valid_value in valid_values_and_expected_values:
-            assert (True, expected_valid_value) == check_type(data_type, valid_value)
+            assert (True, expected_valid_value) == check_type(data_type, valid_value, None)
         for invalid_value in invalid_values:
-            assert (False, None) == check_type(data_type, invalid_value)
+            assert (False, None) == check_type(data_type, invalid_value, None)
     
     @pytest.mark.parametrize(['_', 'data_type', 'valid_values_and_expected_values', 'invalid_values'], [
         # Python types
@@ -75,8 +75,18 @@ class TestCheckType:
     ])
     def test_valid_invalid_cases_is_close(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
         for valid_value, expected_valid_value in valid_values_and_expected_values:
-            is_correct_type, current_valid_value = check_type(data_type, valid_value)
+            is_correct_type, current_valid_value = check_type(data_type, valid_value, None)
             assert is_correct_type
             assert math.isclose(expected_valid_value, current_valid_value)
         for invalid_value in invalid_values:
-            assert (False, None) == check_type(data_type, invalid_value)
+            assert (False, None) == check_type(data_type, invalid_value, None)
+
+    @pytest.mark.parametrize(['_', 'data_type', 'valid_values_and_expected_values_and_size', 'invalid_values_and_size'], [
+        # Python types
+        ('CHAR', CCT.CHAR, [('', '', 1), ('j', 'j', 1), ('oi', 'oi', 2), ('ola', 'ola', 48), ('abcde', 'abcde', None)], [('12', 1), ('ola', 2)]),
+    ])
+    def test_valid_invalid_cases_with_sized_types(self, _, data_type:CCT, valid_values_and_expected_values_and_size:list[tuple[str, Any, int]], invalid_values_and_size:list[tuple[str, int]]):
+        for valid_value, expected_valid_value, type_size in valid_values_and_expected_values_and_size:
+            assert (True, expected_valid_value) == check_type(data_type, valid_value, type_size)
+        for invalid_value, type_size in invalid_values_and_size:
+            assert (False, None) == check_type(data_type, invalid_value, type_size)

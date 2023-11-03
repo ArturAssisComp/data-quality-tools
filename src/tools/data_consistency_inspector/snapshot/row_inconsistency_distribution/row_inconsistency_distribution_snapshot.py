@@ -32,7 +32,8 @@ class RowInconsistencyDistributionSnapshot(DciBaseSnapshot):
                 col = column.name
                 data_type = column.data_type
                 constraints = column.constraints
-                if not is_consistent(row[col], data_type, constraints):
+                type_size = column.type_size
+                if not is_consistent(row[col], data_type, constraints, type_size):
                     total_inconsistencies += 1
             content[total_inconsistencies] = content.get(total_inconsistencies, 0) + 1
 

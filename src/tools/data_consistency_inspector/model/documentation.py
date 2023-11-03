@@ -32,7 +32,8 @@ class Constraint(BaseModel):
 
 class Column(BaseModel):
     name: str
-    data_type: ConsistencyCheckType
+    data_type: ConsistencyCheckType 
+    type_size:int|None = None
     constraints: list[Constraint] = list()
 
     @validator("data_type", pre=True)
@@ -43,6 +44,14 @@ class Column(BaseModel):
                 case 'SS':
                     v = 'ss' + v[2:]
         return v
+    
+    @validator("type_size")
+    def validate_type_size(cls, v:int|None):
+        if v is not None and v <= 0:
+            raise ValueError('type_size must be positive')
+        return v
+
+
 
     class Config:
         extra = 'forbid' 

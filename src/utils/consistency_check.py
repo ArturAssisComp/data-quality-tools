@@ -10,7 +10,7 @@ SPECIAL_RULES = Literal['##not-null##']
 
 
 # TODO refactor
-def is_consistent(value, data_type:CCT, constraints:list[Constraint]):
+def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:int|None):
     if value in {np.nan, None}:
         for constraint in constraints:
             if constraint.name == '##not-null##':
@@ -19,7 +19,7 @@ def is_consistent(value, data_type:CCT, constraints:list[Constraint]):
         return True
     # check the type
     value = str(value)
-    has_correct_type, final_value = check_type(data_type, value)
+    has_correct_type, final_value = check_type(data_type, value, type_size)
     if not has_correct_type:
         return False
     
@@ -61,11 +61,11 @@ char & varchar
 nchar & nvarchar
 ntext, text, & image
 '''
-def check_type(data_type:CCT, value:str)->tuple[bool, Any]:
+def check_type(data_type:CCT, value:str, type_size:int|None)->tuple[bool, Any]:
     '''
     TODO 
     ## Exact numerics
-    - [ ] bigint
+    - [X] bigint
     - [ ] numeric
     - [ ] bit
     - [ ] smallint
@@ -88,6 +88,8 @@ def check_type(data_type:CCT, value:str)->tuple[bool, Any]:
             has_correct_type, final_value = _check_boolean(value)
         case CCT.ISO8601_DATE:
             has_correct_type, final_value = _check_iso8601date(value)
+        case CCT.CHAR:
+            has_correct_type, final_value = _check_char(value, type_size)
         #Sql Server types
         # Exact numerics
         case CCT.ssBIGINT:
@@ -138,6 +140,15 @@ def _check_iso8601date(value:str)->tuple[bool, Any]:
         has_correct_type = False
     return has_correct_type, final_value
 
+def _check_char(value:str, type_size:int|None)->tuple[bool, Any]:
+    assert type_size is None or (type_size is not None and type_size > 0)
+    if type_size is not None and len(value) > type_size:
+        final_value = None
+        has_correct_type = False
+    else:
+        final_value = value
+        has_correct_type = True
+    return has_correct_type, final_value
 
 ## sql server types
 def _check_ssBigint(value:str)->tuple[bool, Any]:
