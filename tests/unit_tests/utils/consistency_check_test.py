@@ -15,6 +15,20 @@ class TestCheckType:
         ('BOOLEAN', CCT.BOOLEAN, [('TRUE', True), ('false', False)], ['tRue', '']),
         ('STR', CCT.STR, [('', ''), ('j', 'j'), ('oi', 'oi')], []),
         ('STRING', CCT.STRING, [('', ''), ('j', 'j'), ('oi', 'oi')], []),
+        ('INT', CCT.INT, [
+            ('0', 0), 
+            ('01', 1), 
+            ('-05', -5), 
+            ('10', 10), 
+            ('1002544', 1002544)], 
+            ['', 'not a number', '1.0', '1.00000000000001', '3+4']),
+        ('INTEGER', CCT.INTEGER, [
+            ('0', 0), 
+            ('01', 1), 
+            ('-05', -5), 
+            ('10', 10), 
+            ('1002544', 1002544)], 
+            ['', 'not a number', '1.0', '1.00000000000001', '3+4']),
     ])
     def test_valid_invalid_cases(self, _, data_type:CCT, valid_values_and_expected_values:list[tuple[str, Any]], invalid_values:list[str]):
         for valid_value, expected_valid_value in valid_values_and_expected_values:
