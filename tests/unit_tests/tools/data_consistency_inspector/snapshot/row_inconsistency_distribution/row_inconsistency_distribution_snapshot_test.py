@@ -22,16 +22,15 @@ class TestRowNullDistributionSnapshot:
     initial_content_one_zero_one_nonzero = {0:1, 1:1}
 
 
-'''
 
     @pytest.mark.parametrize('_, documentation, df_dict, initial_content, final_content', [
-        ('domain test case', strict_mode, {"A":[1, 2, 3], "B":[1, np.nan, np.nan], 'C':[2, 'hi', 3]}, dict(), {2:1, 1:2}),
+        ('domain test case', strict_mode, {"A":[1, 2, 3], "B":[1, np.nan, np.nan], 'C':[2, 'hi', 3]}, dict(), {0:3}),
     ])
     def test_process_dataframe(self, _, documentation:Documentation, df_dict:dict, initial_content:dict, final_content:dict):
         mock_logger = Mock(spec=logging.Logger)
         mock_file_operations = Mock(spec=FileOperations)
         content = initial_content.copy()
-        snapshotBuilder = RowInconsistencyDistributionSnapshot(logger=mock_logger, fileOperations=mock_file_operations)
+        snapshotBuilder = RowInconsistencyDistributionSnapshot(documentation, logger=mock_logger, fileOperations=mock_file_operations)
         df = pd.DataFrame(df_dict)
         state:SnapshotMode
         if documentation.is_subset_mode:
@@ -41,5 +40,3 @@ class TestRowNullDistributionSnapshot:
 
         snapshotBuilder.perform_specific_processing(df, content, documentation=documentation, state=state)
         assert  content == final_content
-
-'''
