@@ -31,31 +31,31 @@ class TestIsConsistent:
 
 class TestCheckConstraints:
     @pytest.mark.parametrize(['_', 'values_expected_results', 'constraints'], [
-        ('no constraints', [(True, True), ('', True), (None, True)], []),
-        (CCSR.TRUE, [(True, True), ('', True), (None, True)], [Constraint(name=CCSR.TRUE.value, rule=None)]),
+        ('no constraints', [(True, None), ('', None), (None, None)], []),
+        (CCSR.TRUE, [(True, None), ('', None), (None, None)], [Constraint(name=CCSR.TRUE.value, rule=None)]),
         ('even integer greater than 3 and less than or equal to 8', 
          [
-             ('', False), (-10, False), (2, False), (3, False), (4, True),
-             (5, False), (6, True), (7, False), (8, True), (20000, False)
+             ('', 'is even'), (-10, '3 < x <= 8'), (2, '3 < x <= 8'), (3, 'is even'), (4, None),
+             (5, 'is even'), (6, None), (7, 'is even'), (8, None), (20000, '3 < x <= 8')
          ], 
          [
             Constraint(name='is even', rule=lambda x: x%2 == 0),
             Constraint(name='3 < x <= 8', rule=lambda x: x > 3 and x <= 8),
          ]),
-        ('non-digit or negative', [(True, False), ('', False), ('hello', False), (-1, False)], [Constraint(name='is digit', rule=str.isdigit), Constraint(name='is non-negative', rule=lambda x: str(x).isdigit() and int(x) >= 0)]),
-        ('string with specific length', [('', False), ('a', False), ('ab', True), ('abc', False), ('hello', False)], [Constraint(name='length is 2', rule=lambda x: len(x) == 2)]),
-        ('multiple of 7', [('', False), (14, True), (15, False), (21, True), ('49', False)], [Constraint(name='multiple of 7', rule=lambda x: isinstance(x, int) and x % 7 == 0)]),
-        ('even and prime', [(2, True), (3, False), (4, False), (5, False), (6, False), (7, False)], [
+        ('non-digit or negative', [(True, 'is digit'), ('', 'is digit'), ('hello', 'is digit'), (-1, 'is digit')], [Constraint(name='is digit', rule=str.isdigit), Constraint(name='is non-negative', rule=lambda x: str(x).isdigit() and int(x) >= 0)]),
+        ('string with specific length', [('', 'length is 2'), ('a', 'length is 2'), ('ab', None), ('abc', 'length is 2'), ('hello', 'length is 2')], [Constraint(name='length is 2', rule=lambda x: len(x) == 2)]),
+        ('multiple of 7', [('', 'multiple of 7'), (14, None), (15, 'multiple of 7'), (21, None), ('49', 'multiple of 7')], [Constraint(name='multiple of 7', rule=lambda x: isinstance(x, int) and x % 7 == 0)]),
+        ('even and prime', [(2, None), (3, 'is even'), (4, 'is prime'), (5, 'is even'), (6, 'is prime'), (7, 'is even')], [
             Constraint(name='is even', rule=lambda x: x % 2 == 0),
             Constraint(name='is prime', rule=lambda x: x > 1 and all(x % i != 0 for i in range(2, int(x**0.5) + 1)))
          ]),
-        ('string number in range', [('1', True), ('5', True), ('11', False), ('0', False), ('-5', False), ('ten', False)], [
+        ('string number in range', [('1', None), ('5', None), ('11', '1 <= x <= 10'), ('0', '1 <= x <= 10'), ('-5', 'string is digit'), ('ten', 'string is digit')], [
             Constraint(name='string is digit', rule=str.isdigit),
             Constraint(name='1 <= x <= 10', rule=lambda x: 1 <= int(x) <= 10)
          ]),
-        ('value in set', [('apple', True), ('banana', True), ('cherry', True), ('durian', False)], [Constraint(name='is in set', rule=lambda x: x in {'apple', 'banana', 'cherry'})]),
-        ('type is integer', [(1, True), (1.0, False), ('1', False), ([1], False)], [Constraint(name='is integer', rule=lambda x: isinstance(x, int))]),
-        ('starts with a and length 5', [('apple', True), ('alpha', True), ('aleph', True), ('array', True), ('anchor', False), ('app', False), ('banana', False)], [
+        ('value in set', [('apple', None), ('banana', None), ('cherry', None), ('durian', 'is in set')], [Constraint(name='is in set', rule=lambda x: x in {'apple', 'banana', 'cherry'})]),
+        ('type is integer', [(1, None), (1.0, 'is integer'), ('1', 'is integer'), ([1], 'is integer')], [Constraint(name='is integer', rule=lambda x: isinstance(x, int))]),
+        ('starts with a and length 5', [('apple', None), ('alpha', None), ('aleph', None), ('array', None), ('anchor', 'length is 5'), ('app', 'length is 5'), ('banana', 'starts with a')], [
             Constraint(name='starts with a', rule=lambda x: isinstance(x, str) and x.startswith('a')),
             Constraint(name='length is 5', rule=lambda x: isinstance(x, str) and len(x) == 5)
          ]),

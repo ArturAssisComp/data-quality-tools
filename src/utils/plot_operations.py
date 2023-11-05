@@ -96,7 +96,7 @@ class PlotOperations:
         if has_label_on_top:
             for bar in bars:
                 yval = bar.get_height()
-                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}{suffix}', va='bottom', ha='center') # Add percentage sign to the label
+                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}{suffix}', va='bottom', ha='center', fontsize=5) # Add percentage sign to the label
 
 
         if x_labels:

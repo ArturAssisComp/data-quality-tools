@@ -30,7 +30,7 @@ def execute_command(base_dir:str, midArguments = ''):
 
 
 class TestNullValueInspector:
-    @pytest.mark.run(order=1)
+    @pytest.mark.run(order=3)
     def test_free_mode(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot = execute_command(base_dir)
@@ -63,7 +63,7 @@ class TestNullValueInspector:
 
         clean_folder(base_dir)
 
-    @pytest.mark.run(order=2)
+    @pytest.mark.run(order=4)
     def test_strict_mode(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot = execute_command(base_dir, '--doc ./documentation.txt')
@@ -77,7 +77,7 @@ class TestNullValueInspector:
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "strict-mode", 
-            "population":{"content": {"A": 0, "B": 1}}, 
+            "population":{"content": {"B": 1}}, 
             "samples":None,
             "columns":['A', 'B']
 
@@ -92,7 +92,7 @@ class TestNullValueInspector:
         }
         clean_folder(base_dir)
 
-    @pytest.mark.run(order=3)
+    @pytest.mark.run(order=5)
     def test_subset_mode(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         row_null_distribution_snapshot, column_null_count_snapshot, column_pair_null_pattern_snapshot = execute_command(base_dir, '--doc ./documentation_subset_mode.txt')

@@ -2,12 +2,12 @@ import re
 from typing import Callable, Any
 from pydantic import BaseModel, validator
 
-from globals.types import ConsistencyCheckType
+from globals.types import ConsistencyCheckType, ReservedRuleName
 
 class RuleProcessor:
     @staticmethod
     def validate_rule(rule_str: str) -> bool:
-        if not re.match(r"^[0-9a-zA-Z_ <>=&|()\[\].-]+$", rule_str):
+        if not re.match(r"^[0-9a-zA-Z_ <>=%&|()\[\].-]+$", rule_str):
             raise ValueError("Invalid characters in rule")
         return True
 
@@ -23,6 +23,12 @@ class Constraint(BaseModel):
 
     class Config:
         extra = 'forbid' 
+    
+    @validator('name')
+    def validate_name(cls, v):
+        if v in ReservedRuleName:
+            return ValueError(f'\'{v}\' is a reserved name.')
+        return v
 
     @validator("rule", pre=True)
     def validate_rule(cls, v):
