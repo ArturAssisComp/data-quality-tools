@@ -31,6 +31,8 @@ class ColumnInconsistencyCountByTypeSnapshot(DciBaseSnapshot):
             data_type = column.data_type
             constraints = column.constraints
             type_size = column.type_size
+            if col not in df.columns:
+                continue
             for value in df[col]:
                 inconsistency = get_inconsistency(value, data_type, constraints, type_size)
                 if inconsistency is not None:
