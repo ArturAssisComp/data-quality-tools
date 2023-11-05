@@ -1,16 +1,49 @@
 import math
 from typing import Any
 import pytest
-from utils.consistency_check import check_type
-from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants
+from tools.data_consistency_inspector.model.documentation import Constraint
+from utils.consistency_check import check_type, check_constraints
+from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants, ConsistencyCheckSpecialRules as CCSR
 from datetime import date
 
-
+class TestCheckConstraints:
+    @pytest.mark.parametrize(['_', 'values_expected_results', 'constraints'], [
+        ('no constraints', [(True, True), ('', True), (None, True)], []),
+        (CCSR.TRUE, [(True, True), ('', True), (None, True)], [Constraint(name=CCSR.TRUE.value, rule=None)]),
+        ('even integer greater than 3 and less than or equal to 8', 
+         [
+             ('', False), (-10, False), (2, False), (3, False), (4, True),
+             (5, False), (6, True), (7, False), (8, True), (20000, False)
+         ], 
+         [
+            Constraint(name='is even', rule=lambda x: x%2 == 0),
+            Constraint(name='3 < x <= 8', rule=lambda x: x > 3 and x <= 8),
+         ]),
+        ('non-digit or negative', [(True, False), ('', False), ('hello', False), (-1, False)], [Constraint(name='is digit', rule=str.isdigit), Constraint(name='is non-negative', rule=lambda x: str(x).isdigit() and int(x) >= 0)]),
+        ('string with specific length', [('', False), ('a', False), ('ab', True), ('abc', False), ('hello', False)], [Constraint(name='length is 2', rule=lambda x: len(x) == 2)]),
+        ('multiple of 7', [('', False), (14, True), (15, False), (21, True), ('49', False)], [Constraint(name='multiple of 7', rule=lambda x: isinstance(x, int) and x % 7 == 0)]),
+        ('even and prime', [(2, True), (3, False), (4, False), (5, False), (6, False), (7, False)], [
+            Constraint(name='is even', rule=lambda x: x % 2 == 0),
+            Constraint(name='is prime', rule=lambda x: x > 1 and all(x % i != 0 for i in range(2, int(x**0.5) + 1)))
+         ]),
+        ('string number in range', [('1', True), ('5', True), ('11', False), ('0', False), ('-5', False), ('ten', False)], [
+            Constraint(name='string is digit', rule=str.isdigit),
+            Constraint(name='1 <= x <= 10', rule=lambda x: 1 <= int(x) <= 10)
+         ]),
+        ('value in set', [('apple', True), ('banana', True), ('cherry', True), ('durian', False)], [Constraint(name='is in set', rule=lambda x: x in {'apple', 'banana', 'cherry'})]),
+        ('type is integer', [(1, True), (1.0, False), ('1', False), ([1], False)], [Constraint(name='is integer', rule=lambda x: isinstance(x, int))]),
+        ('starts with a and length 5', [('apple', True), ('alpha', True), ('aleph', True), ('array', True), ('anchor', False), ('app', False), ('banana', False)], [
+            Constraint(name='starts with a', rule=lambda x: isinstance(x, str) and x.startswith('a')),
+            Constraint(name='length is 5', rule=lambda x: isinstance(x, str) and len(x) == 5)
+         ]),
+    ])
+    def test_assert_no_constraint(self, _, values_expected_results:list[tuple[Any, bool]], constraints:list[Constraint]):
+        for value, expected_result in values_expected_results:
+            assert check_constraints(value, constraints) is expected_result
 
 
 
 class TestCheckType:
-
     @pytest.mark.parametrize(['_', 'data_type', 'valid_values_and_expected_values', 'invalid_values'], [
         # Python types
         ('BOOL', CCT.BOOL, [('true', True), ('FALSE', False)], ['tRue', '']),
