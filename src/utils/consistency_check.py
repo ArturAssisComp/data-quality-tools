@@ -11,11 +11,10 @@ from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants
 
 # TODO refactor
 def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:int|None):
-    if value in {np.nan, None}:
+    if value is None or (isinstance(value, (int, float, np.number)) and np.isnan(value)):
         for constraint in constraints:
             if constraint.name == CCSR.NOT_NULL.value:
                 return False
-            
         return True
     # check the type
     value = str(value)

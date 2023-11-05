@@ -2,9 +2,32 @@ import math
 from typing import Any
 import pytest
 from tools.data_consistency_inspector.model.documentation import Constraint
-from utils.consistency_check import check_type, check_constraints
+from utils.consistency_check import check_type, check_constraints, is_consistent
 from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants, ConsistencyCheckSpecialRules as CCSR
 from datetime import date
+
+
+'''
+value: valid or invalid
+type: with size,  without size
+constraints: empty, 1 rule, 2 rules
+size: None, 0, or 3
+Result: false, true
+
+
+'''
+class TestIsConsistent:
+    def test_none(self):
+        assert is_consistent(None, CCT.STR, [], None)
+    
+    def test_the_same_value_with_valid_invalid_constraints(self):
+        value = 'hello'
+        assert is_consistent(value, CCT.STR, [], None)
+        assert not is_consistent(value, CCT.FLOAT, [], None)
+        assert is_consistent(value, CCT.CHAR, [Constraint(rule=lambda x: x in {'hello', 'world'}, name='valid set')], None)
+        assert not is_consistent(value, CCT.CHAR, [Constraint(rule=lambda x: x in {'helloo', 'world'}, name='valid set')], None)
+        assert not is_consistent(value, CCT.CHAR, [Constraint(rule=lambda x: x in {'hello', 'world'}, name='valid set')], 3)
+        assert is_consistent(value, CCT.CHAR, [Constraint(rule=lambda x: x in {'hello', 'world'}, name='valid set')], 5)
 
 class TestCheckConstraints:
     @pytest.mark.parametrize(['_', 'values_expected_results', 'constraints'], [
