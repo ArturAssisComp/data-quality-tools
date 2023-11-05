@@ -2,7 +2,7 @@ import re
 from typing import Callable, Any
 from pydantic import BaseModel, validator
 
-from globals.types import ConsistencyCheckType
+from globals.types import ConsistencyCheckType, ReservedRuleName
 
 class RuleProcessor:
     @staticmethod
@@ -23,6 +23,12 @@ class Constraint(BaseModel):
 
     class Config:
         extra = 'forbid' 
+    
+    @validator('name')
+    def validate_name(cls, v):
+        if v in ReservedRuleName:
+            return ValueError(f'\'{v}\' is a reserved name.')
+        return v
 
     @validator("rule", pre=True)
     def validate_rule(cls, v):
