@@ -1,0 +1,7 @@
+{
+	"columns":[
+
+		{"name":"A", "data_type":"integer", "constraints":[{"name":"positive", "rule":"x>0"}, {"name":"even", "rule":"x%2 == 0"}]},
+		{"name":"B", "data_type":"char", "type_size":2, "constraints":[{"name":"##NOT-NULL##", "rule":null}]}
+	]
+}
