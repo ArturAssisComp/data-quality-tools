@@ -2,12 +2,11 @@
 from datetime import date
 import re
 import numpy as np
-from typing import Any, Literal
+from typing import Any
 from tools.data_consistency_inspector.model.documentation import Constraint
 from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants, ConsistencyCheckSpecialRules as CCSR
 
 
-SPECIAL_RULES = Literal['##not-null##']
 
 
 # TODO refactor
@@ -25,15 +24,7 @@ def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:
         return False
     
     # check the constraints
-    for constraint in constraints:
-        if constraint.rule is None:
-            continue
-        try:
-            if not constraint.rule(final_value):
-                return False
-        except:
-            return False
-    return True
+    return check_constraints(final_value, constraints)
 
 
 def check_constraints(final_value, constraints:list[Constraint]):
