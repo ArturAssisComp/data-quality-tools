@@ -23,6 +23,8 @@ class ColumnNullCountSnapshot(NviBaseSnapshot):
         if state == SnapshotMode.SUBSET_MODE:
             df = self._get_subset_columns(df, documentation.column)
         for col in df.columns:
-            content[col] = content.get(col, 0) + int(df[col].isnull().sum())
+            nulls = int(df[col].isnull().sum())
+            if nulls > 0:
+                content[col] = content.get(col, 0) + nulls
         
 

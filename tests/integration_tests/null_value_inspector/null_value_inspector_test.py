@@ -77,7 +77,7 @@ class TestNullValueInspector:
         assert column_null_count_snapshot == {
             "type": "column_null_count_snapshot", 
             "state": "strict-mode", 
-            "population":{"content": {"A": 0, "B": 1}}, 
+            "population":{"content": {"B": 1}}, 
             "samples":None,
             "columns":['A', 'B']
 
