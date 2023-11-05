@@ -1,7 +1,7 @@
 import logging
 
 from globals.types import SnapshotMode, SnapshotType
-from tools.base_snapshot.base_snapshot import BaseSnapshot
+from tools.null_value_inspector.snapshot.nvi_base_snapshot import NviBaseSnapshot
 
 from globals.types import get_snapshot_name, SnapshotType
 from logger.utils import get_custom_logger_name
@@ -11,11 +11,11 @@ from utils.file_operations import FileOperations
 
 logger = logging.getLogger(get_custom_logger_name(__name__, len(__name__.split('.')) - 1, 'last'))
 
-class RowNullDistributionSnapshot(BaseSnapshot):
+class RowNullDistributionSnapshot(NviBaseSnapshot):
     _name:str = get_snapshot_name(SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT)
     _type:SnapshotType = SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT
-    def __init__(self, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
-        super().__init__(logger=logger, fileOperations=fileOperations)
+    def __init__(self, documentation:Documentation, logger:logging.Logger = logger, fileOperations:FileOperations = FileOperations()):
+        super().__init__(documentation, logger=logger, fileOperations=fileOperations)
 
 
 

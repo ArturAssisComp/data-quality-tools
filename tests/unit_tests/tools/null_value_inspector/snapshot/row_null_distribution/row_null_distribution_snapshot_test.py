@@ -61,7 +61,7 @@ class TestRowNullDistributionSnapshot:
         mock_logger = Mock(spec=logging.Logger)
         mock_file_operations = Mock(spec=FileOperations)
         content = initial_content.copy()
-        snapshotBuilder = RowNullDistributionSnapshot(logger=mock_logger, fileOperations=mock_file_operations)
+        snapshotBuilder = RowNullDistributionSnapshot(documentation, logger=mock_logger, fileOperations=mock_file_operations)
         df = pd.DataFrame(df_dict)
         state:SnapshotMode
         if documentation.is_subset_mode:

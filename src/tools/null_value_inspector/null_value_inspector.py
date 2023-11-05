@@ -57,16 +57,16 @@ class NullValueInspector(BaseToolClass):
         self._file_operations.create_directory(self._base_snapshot_path)
         log_header(logger, 'Initializing Snapshots')
         if self._row_null_distribution_snapshot_is_necessary(tool_arguments):
-            rowNullDistributionSnapshot = RowNullDistributionSnapshot()
-            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
+            rowNullDistributionSnapshot = RowNullDistributionSnapshot(self._documentation)
+            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
             self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowNullDistributionSnapshot.get_filename())
         if self._column_null_count_snapshot_is_necessary(tool_arguments):
-            columnNullCountSnapshot = ColumnNullCountSnapshot()
-            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
+            columnNullCountSnapshot = ColumnNullCountSnapshot(self._documentation)
+            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
             self._column_null_count_snapshot_path = os.path.join(self._base_snapshot_path, columnNullCountSnapshot.get_filename())
         if self._column_pair_null_pattern_snapshot_is_necessary(tool_arguments):
-            columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot()
-            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._documentation, self._samples)
+            columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot(self._documentation)
+            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
             self._column_pair_null_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairNullPatternSnapshot.get_filename())
         log_footer(logger, 'Snapshots Finished    ')
     
