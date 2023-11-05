@@ -4,27 +4,29 @@ import re
 import numpy as np
 from typing import Any
 from tools.data_consistency_inspector.model.documentation import Constraint
-from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants, ConsistencyCheckSpecialRules as CCSR
+from globals.types import ConsistencyCheckType as CCT, ConsistencyCheckConstants as CCConstants, ConsistencyCheckSpecialRules as CCSR, ReservedRuleName
 
 
 
 
 # TODO refactor
 def is_consistent(value, data_type:CCT, constraints:list[Constraint], type_size:int|None):
+    return get_inconsistency(value, data_type, constraints, type_size) is None
+
+def get_inconsistency(value, data_type:CCT, constraints:list[Constraint], type_size:int|None):
     if value is None or (isinstance(value, (int, float, np.number)) and np.isnan(value)):
         for constraint in constraints:
             if constraint.name == CCSR.NOT_NULL.value:
-                return False
-        return True
+                return constraint.name
+        return None
     # check the type
     value = str(value)
     has_correct_type, final_value = check_type(data_type, value, type_size)
     if not has_correct_type:
-        return False
+        return ReservedRuleName.TYPE.value
     
     # check the constraints
     return check_constraints(final_value, constraints)
-
 
 def check_constraints(final_value, constraints:list[Constraint]):
     for constraint in constraints:
@@ -33,17 +35,16 @@ def check_constraints(final_value, constraints:list[Constraint]):
             function_name = ''.join(['##', function_name, '##'])
             if _handle_special_rules(function_name, args):
                 continue
-            return False
-
+            return function_name
         else:
             if constraint.rule is None:
                 continue
             try:
                 if not constraint.rule(final_value):
-                    return False
+                    return constraint.name
             except:
-                return False
-    return True
+                return constraint.name
+    return None
 
 
 def _handle_special_rules(function_name:str, args:list[str]):

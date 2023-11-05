@@ -8,6 +8,7 @@ class SnapshotType(Enum):
     COLUMN_PAIR_NULL_PATTERN_SNAPSHOT = 'column_pair_null_pattern_snapshot'
     # data inconsistency inspector tool
     ROW_INCONSISTENCY_DISTRIBUTION_SNAPSHOT = 'row_inconsistency_distribution_snapshot'
+    COLUMN_INCONSISTENCY_COUNT_BY_TYPE_SNAPSHOT = 'column_inconsistency_count_by_type_snapshot'
 
 class SnapshotMode(Enum):
     INITIAL = 'initial'
