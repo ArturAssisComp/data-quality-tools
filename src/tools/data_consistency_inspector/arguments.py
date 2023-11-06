@@ -44,3 +44,21 @@ def add_arguments(tool_subparser:ArgumentParser):
         default=False,
         help=help_text
     )
+
+
+
+    help_text = (
+        "Format: Heatmap | "
+        "Description: Ranks frequent combinations of pairs of columns with inconsistencies | "
+        "Snapshot: 'column_pair_inconsistency_pattern_snapshot' | "
+        "Insight: Highlight potential correlation between two columns in terms of inconsistency problems"
+    )
+
+    data_consistency_inspector_group.add_argument(
+        '--inconsistent-frequent-pairs-overview',
+        '--ifpo',
+        '-n3',
+        action='store_true',
+        default=False,
+        help=help_text
+    )
