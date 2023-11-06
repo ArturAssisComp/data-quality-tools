@@ -153,6 +153,7 @@ class BaseSnapshot:
 
     def _process_dataframe_in_chunks(self, target_file_path:str, chunksize:int, content:dict, files:list, state:SnapshotMode, documentation:BaseModel, generator_func:Callable, sample_str:str='', **kwargs):
         initial_time = time.time()
+        self._logger.info(f'Processing {os.path.basename(target_file_path)} {f'({sample_str})' if sample_str else ''}')
         for df in generator_func(target_file_path, chunksize=chunksize, dtype=str, **kwargs):
             self.perform_specific_processing(df, content, state, documentation)
         files.append(target_file_path)

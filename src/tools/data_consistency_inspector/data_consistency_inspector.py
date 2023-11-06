@@ -14,7 +14,8 @@ from utils.file_operations import FileOperations
 
 # tools
 from tools.data_consistency_inspector.result_generator.inconsistency_distribution_by_row.generator import InconsistencyDistributionByRowOverviewGenerator
-from tools.data_consistency_inspector.result_generator.ranked_inconsistency_count_by_column_overview.generator import RankedInconsistencyCountByColumnOverviewGenerator
+from tools.data_consistency_inspector.result_generator.ranked_inconsistency_count_by_column.generator import RankedInconsistencyCountByColumnOverviewGenerator
+from tools.data_consistency_inspector.result_generator.inconsistent_frequent_pairs.generator import InconsistentFrequentPairsOverviewGenerator
 
 # snapshots
 from tools.data_consistency_inspector.snapshot.row_inconsistency_distribution.row_inconsistency_distribution_snapshot import RowInconsistencyDistributionSnapshot
@@ -92,7 +93,7 @@ class DataConsistencyInspector(BaseToolClass):
         return tool_arguments.ranked_inconsistency_count_by_column_overview
 
     def _column_pair_inconsistency_pattern_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
-        return True
+        return tool_arguments.inconsistent_frequent_pairs_overview
 
     def _create_results(self, tool_arguments:ToolArguments):
         self._file_operations.create_directory(self._base_result_path)
@@ -123,6 +124,20 @@ class DataConsistencyInspector(BaseToolClass):
                     logger.error(f'Error while executing {overview_name}: {e}')
             else:
                 logger.error('Invalid column_inconsistency_count_by_type_snapshot')
+        if tool_arguments.inconsistency_distribution_by_row_overview:
+            overview_name = 'inconsistency_distribution_by_row_overview'
+            logger.info(f'Creating {overview_name}')
+            if self._column_pair_inconsistency_pattern_snapshot_path and os.path.isfile(self._column_pair_inconsistency_pattern_snapshot_path):
+                try:
+                    snapshot_path_map = {
+                        SnapshotType.COLUMN_PAIR_INCONSISTENCY_PATTERN_SNAPSHOT: self._column_pair_inconsistency_pattern_snapshot_path,
+                    }
+                    InconsistentFrequentPairsOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path)
+                except Exception as e:
+                    logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid column_pair_inconsistency_pattern_snapshot')
+
         log_footer(logger, 'Results Finished    ')
     
 
