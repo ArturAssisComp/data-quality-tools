@@ -76,6 +76,7 @@ class PlotOperations:
         - `base_result_filepath` (str): The directory in which to save the output PNG file.
         - `x_labels` (list[str], optional): The labels for the x-ticks. Defaults to None.
         """
+
         # Use a style for the plot
         plt.style.use('ggplot')
 
