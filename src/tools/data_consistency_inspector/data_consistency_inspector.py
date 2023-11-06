@@ -14,6 +14,7 @@ from utils.file_operations import FileOperations
 
 # tools
 from tools.data_consistency_inspector.result_generator.inconsistency_distribution_by_row.generator import InconsistencyDistributionByRowOverviewGenerator
+from tools.data_consistency_inspector.result_generator.ranked_inconsistency_count_by_column_overview.generator import RankedInconsistencyCountByColumnOverviewGenerator
 
 # snapshots
 from tools.data_consistency_inspector.snapshot.row_inconsistency_distribution.row_inconsistency_distribution_snapshot import RowInconsistencyDistributionSnapshot
@@ -88,7 +89,7 @@ class DataConsistencyInspector(BaseToolClass):
         return tool_arguments.inconsistency_distribution_by_row_overview
     
     def _column_inconsistency_count_by_type_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
-        return True
+        return tool_arguments.ranked_inconsistency_count_by_column_overview
 
     def _column_pair_inconsistency_pattern_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
         return True
@@ -108,7 +109,20 @@ class DataConsistencyInspector(BaseToolClass):
                 except Exception as e:
                     logger.error(f'Error while executing {overview_name}: {e}')
             else:
-                logger.error('Invalid row_null_distribution_snapshot')
+                logger.error('Invalid row_inconsistency_distribution_snapshot')
+        if tool_arguments.ranked_inconsistency_count_by_column_overview:
+            overview_name = 'ranked_inconsistency_count_by_column_overview'
+            logger.info(f'Creating {overview_name}')
+            if self._column_inconsistency_count_by_type_snapshot_path and os.path.isfile(self._column_inconsistency_count_by_type_snapshot_path):
+                try:
+                    snapshot_path_map = {
+                        SnapshotType.COLUMN_INCONSISTENCY_COUNT_BY_TYPE_SNAPSHOT: self._column_inconsistency_count_by_type_snapshot_path, 
+                    }
+                    RankedInconsistencyCountByColumnOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path) 
+                except Exception as e:
+                    logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid column_inconsistency_count_by_type_snapshot')
         log_footer(logger, 'Results Finished    ')
     
 
