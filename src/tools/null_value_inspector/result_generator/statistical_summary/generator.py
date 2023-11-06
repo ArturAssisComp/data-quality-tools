@@ -96,7 +96,7 @@ class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
         initial_y = 8
         # Main Title
         c.setFont("Helvetica-Bold", 18)
-        c.drawString(1 * inch, initial_y * inch, "Data Quality Report")
+        c.drawString(1 * inch, initial_y * inch, "Data Quality Report - Null Value Inspector")
 
         # General Summary Title
         c.setFont("Helvetica-Bold", 14)

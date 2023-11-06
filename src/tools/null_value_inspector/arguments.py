@@ -20,7 +20,7 @@ def add_arguments(tool_subparser:ArgumentParser):
 
     null_value_inspector_group.add_argument(
         '--statistical-summary-overview',
-        '--ss',
+        '--sso',
         '-n0',
         action='store_true',
         default=False,

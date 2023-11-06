@@ -11,6 +11,25 @@ def add_arguments(tool_subparser:ArgumentParser):
         'Tool: Data Consistency Inspector Settings'
     )
 
+
+    help_text = (
+        "Format: JSON | "
+        "Description: Multiple metrics that will help assessing the quality of the data in analysis; | "
+        "Snapshot: 'row_inconsistency_distribution_snapshot', 'column_inconsistency_count_by_type_snapshot' | "
+        "Insight: Statistical insights"
+    )
+
+    data_consistency_inspector_group.add_argument(
+        '--statistical-summary-overview',
+        '--sso',
+        '-n0',
+        action='store_true',
+        default=False,
+        help=help_text
+    )
+
+
+
     help_text = (
         "Format: Bar Chart | "
         "Description: Visualizes row counts by inconsistency values | "
