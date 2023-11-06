@@ -17,7 +17,6 @@ FIG_NAME = 'null_frequent_pairs_overview.png'
 TOP_10_FIG_NAME = 'top_10_null_frequent_pairs_overview.png'
 TITLE = 'Null Frequent Pairs Overview'
 TOP_10_TITLE = 'Null Frequent Pairs Overview (top 10)'
-MAX_COLUMNS = 40
 
 
 class NullFrequentPairsOverviewGenerator(BaseOverviewGenerator):
@@ -42,10 +41,11 @@ class NullFrequentPairsOverviewGenerator(BaseOverviewGenerator):
         content = column_pair_null_pattern_snapshot_content.content
         df = pd.DataFrame(content)
         df[df.isna()] = 0
-        df = self._select_top_n_columns(MAX_COLUMNS, df)
-        self._plot_operations.plot_heatmap(df, TITLE, basedir_path, name_preffix + FIG_NAME, log_scale=True)
+        df_top_non_zero = self._select_top_non_zero_columns(df)
+
+        self._plot_operations.plot_heatmap(df_top_non_zero, TITLE, basedir_path, name_preffix + FIG_NAME, log_scale=True)
         self._logger.info(f'{FIG_NAME} generated!')
-        self._plot_operations.plot_heatmap(df, TITLE, basedir_path, name_preffix + 'rel_' + FIG_NAME, log_scale=True, relative=True)
+        self._plot_operations.plot_heatmap(df_top_non_zero, TITLE, basedir_path, name_preffix + 'rel_' + FIG_NAME, log_scale=True, relative=True)
         self._logger.info(f'{ 'rel_' + FIG_NAME} generated!')
 
         self._plot_operations.plot_heatmap(self._select_top_n_columns(10, df), TOP_10_TITLE, basedir_path, name_preffix + TOP_10_FIG_NAME)
@@ -60,5 +60,12 @@ class NullFrequentPairsOverviewGenerator(BaseOverviewGenerator):
 
         return df.loc[top_columns, top_columns]
 
+    def _select_top_non_zero_columns(self, df:pd.DataFrame):
+        col_max = df.max(axis=0)
+        tmp_df = df.loc[col_max > 0, col_max > 0]
+        col_max = tmp_df.max(axis=0)
+        top_columns = list(col_max.sort_values(ascending=False).index)
+
+        return tmp_df.loc[top_columns, top_columns]
 
 
