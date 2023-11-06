@@ -57,17 +57,29 @@ class NullValueInspector(BaseToolClass):
         self._file_operations.create_directory(self._base_snapshot_path)
         log_header(logger, 'Initializing Snapshots')
         if self._row_null_distribution_snapshot_is_necessary(tool_arguments):
-            rowNullDistributionSnapshot = RowNullDistributionSnapshot(self._documentation)
-            rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
-            self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowNullDistributionSnapshot.get_filename())
+            try:
+                rowNullDistributionSnapshot = RowNullDistributionSnapshot(self._documentation)
+                rowNullDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
+                self._row_null_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowNullDistributionSnapshot.get_filename())
+            except Exception as e:
+                self._logger.error(e)
+                raise
         if self._column_null_count_snapshot_is_necessary(tool_arguments):
-            columnNullCountSnapshot = ColumnNullCountSnapshot(self._documentation)
-            columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
-            self._column_null_count_snapshot_path = os.path.join(self._base_snapshot_path, columnNullCountSnapshot.get_filename())
+            try:
+                columnNullCountSnapshot = ColumnNullCountSnapshot(self._documentation)
+                columnNullCountSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
+                self._column_null_count_snapshot_path = os.path.join(self._base_snapshot_path, columnNullCountSnapshot.get_filename())
+            except Exception as e:
+                self._logger.error(e)
+                raise
         if self._column_pair_null_pattern_snapshot_is_necessary(tool_arguments):
-            columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot(self._documentation)
-            columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
-            self._column_pair_null_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairNullPatternSnapshot.get_filename())
+            try:
+                columnPairNullPatternSnapshot = ColumnPairNullPatternSnapshot(self._documentation)
+                columnPairNullPatternSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
+                self._column_pair_null_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairNullPatternSnapshot.get_filename())
+            except Exception as e:
+                self._logger.error(e)
+                raise
         log_footer(logger, 'Snapshots Finished    ')
     
 
