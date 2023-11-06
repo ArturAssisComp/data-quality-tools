@@ -3,9 +3,17 @@ from typing import Any
 from globals.types import SnapshotType
 
 from logger.utils import get_custom_logger_name
+
+# null value inspector
 from tools.null_value_inspector.snapshot.column_null_count.model.model import ColumnNullCountSnapshotContent
 from tools.null_value_inspector.snapshot.column_pair_null_pattern.model.model import ColumnPairNullPatternSnapshotContent
 from tools.null_value_inspector.snapshot.row_null_distribution.model.model import RowNullDistributionSnapshotContent
+
+# data consistency inspector
+from tools.data_consistency_inspector.snapshot.column_inconsistency_count_by_type.model.model import ColumnInconsistencyCountByTypeSnapshotContent
+from tools.data_consistency_inspector.snapshot.column_pair_inconsistency_pattern.model.model import ColumnPairInconsistencyPatternSnapshotContent
+from tools.data_consistency_inspector.snapshot.row_inconsistency_distribution.model.model import RowInconsistencyDistributionSnapshotContent
+
 from tools.base_snapshot.model.snapshot_model import SnapshotModel
 from utils.file_operations import FileOperations
 
@@ -81,9 +89,16 @@ class BaseOverviewGenerator:
                     result = ColumnPairNullPatternSnapshotContent(content=content)
                 case SnapshotType.ROW_NULL_DISTRIBUTION_SNAPSHOT:
                     result = RowNullDistributionSnapshotContent(content=content)
+                case SnapshotType.COLUMN_INCONSISTENCY_COUNT_BY_TYPE_SNAPSHOT:
+                    result = ColumnInconsistencyCountByTypeSnapshotContent(content=content)
+                case SnapshotType.COLUMN_PAIR_INCONSISTENCY_PATTERN_SNAPSHOT:
+                    result = ColumnPairInconsistencyPatternSnapshotContent(content=content)
+                case SnapshotType.ROW_INCONSISTENCY_DISTRIBUTION_SNAPSHOT:
+                    result = RowInconsistencyDistributionSnapshotContent(content=content)
                 case _:
                     raise ValueError('Unexpected snapshot type')
             return result, type_
         return _get_snapshot_content
+
 
 

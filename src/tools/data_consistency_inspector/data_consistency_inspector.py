@@ -3,6 +3,7 @@ import json
 import os
 
 from pydantic import ValidationError
+from globals.types import SnapshotType
 
 from tools.base_tool import  BaseToolClass
 from tools.data_consistency_inspector.model.tool_arguments import ToolArguments
@@ -12,6 +13,7 @@ from logger.utils import log_footer, log_header, get_custom_logger_name
 from utils.file_operations import FileOperations
 
 # tools
+from tools.data_consistency_inspector.result_generator.inconsistency_distribution_by_row.generator import InconsistencyDistributionByRowOverviewGenerator
 
 # snapshots
 from tools.data_consistency_inspector.snapshot.row_inconsistency_distribution.row_inconsistency_distribution_snapshot import RowInconsistencyDistributionSnapshot
@@ -62,25 +64,28 @@ class DataConsistencyInspector(BaseToolClass):
                 rowInconsistencyDistributionSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
                 self._row_inconsistency_distribution_snapshot_path = os.path.join(self._base_snapshot_path, rowInconsistencyDistributionSnapshot.get_filename())
             except Exception as e:
-                self._logger.critical(e)
+                self._logger.error(e)
+                raise
         if self._column_inconsistency_count_by_type_snapshot_is_necessary(tool_arguments):
             try:
                 columnInconsistencyCountByTypeSnapshot = ColumnInconsistencyCountByTypeSnapshot(self._documentation)
                 columnInconsistencyCountByTypeSnapshot.create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
                 self._column_inconsistency_count_by_type_snapshot_path = os.path.join(self._base_snapshot_path, columnInconsistencyCountByTypeSnapshot.get_filename())
             except Exception as e:
-                self._logger.critical(e)
+                self._logger.error(e)
+                raise
         if self._column_pair_inconsistency_pattern_snapshot_is_necessary(tool_arguments):
             try:
                 columnPairInconsistencyPatternSnapshot = ColumnPairInconsistencyPatternSnapshot(self._documentation)
                 columnPairInconsistencyPatternSnapshot .create_snapshot(tool_arguments.dataset, self._base_snapshot_path, self._samples)
                 self._column_pair_inconsistency_pattern_snapshot_path = os.path.join(self._base_snapshot_path, columnPairInconsistencyPatternSnapshot.get_filename())
             except Exception as e:
-                self._logger.critical(e)
+                self._logger.error(e)
+                raise
         log_footer(logger, 'Snapshots Finished    ')
     
     def _row_inconsistency_distribution_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
-        return True
+        return tool_arguments.inconsistency_distribution_by_row_overview
     
     def _column_inconsistency_count_by_type_snapshot_is_necessary(self, tool_arguments:ToolArguments)->bool:
         return True
@@ -91,6 +96,19 @@ class DataConsistencyInspector(BaseToolClass):
     def _create_results(self, tool_arguments:ToolArguments):
         self._file_operations.create_directory(self._base_result_path)
         log_header(logger, 'Initializing Results')
+        if tool_arguments.inconsistency_distribution_by_row_overview:
+            overview_name = 'inconsistency_distribution_by_row_overview'
+            logger.info(f'Creating {overview_name}')
+            if self._row_inconsistency_distribution_snapshot_path and os.path.isfile(self._row_inconsistency_distribution_snapshot_path):
+                try:
+                    snapshot_path_map = {
+                        SnapshotType.ROW_INCONSISTENCY_DISTRIBUTION_SNAPSHOT: self._row_inconsistency_distribution_snapshot_path, 
+                    }
+                    InconsistencyDistributionByRowOverviewGenerator(snapshot_path_map).generate_overview(self._base_result_path) 
+                except Exception as e:
+                    logger.error(f'Error while executing {overview_name}: {e}')
+            else:
+                logger.error('Invalid row_null_distribution_snapshot')
         log_footer(logger, 'Results Finished    ')
     
 

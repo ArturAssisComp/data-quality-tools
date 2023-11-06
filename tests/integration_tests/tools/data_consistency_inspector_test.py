@@ -25,7 +25,7 @@ def _load_snapshot(base_dir:str, snapshot_name:str):
 
 def execute_command(base_dir:str, midArguments = ''):
         os.chdir(base_dir)
-        os.system(f'..\\..\\..\\venv\\Scripts\\data-quality-tools.exe {midArguments} dci')
+        os.system(f'..\\..\\..\\venv\\Scripts\\data-quality-tools.exe {midArguments} dci -n1')
         return load_snapshots(base_dir)
 
 
