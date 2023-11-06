@@ -27,3 +27,20 @@ def add_arguments(tool_subparser:ArgumentParser):
         default=False,
         help=help_text
     )
+
+    help_text = (
+        "Format: Bar Chart | "
+        "Description: Visualizes inconsistencies by column, ranked from the greatest to the smallest | "
+        "Axes: X = Column name, Y = Inconsistency count or Y = Percentage of Inconsistencies  | "
+        "Snapshot: 'column_inconsistency_count_by_type_snapshot' | "
+        "Insight: identify columns needing attention based on inconsistency data"
+    )
+
+    data_consistency_inspector_group.add_argument(
+        '--ranked-inconsistency-count-by-column-overview',
+        '--ricbco',
+        '-n2',
+        action='store_true',
+        default=False,
+        help=help_text
+    )
