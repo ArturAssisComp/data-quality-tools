@@ -82,11 +82,11 @@ class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
         }
 
         # save the result
-        self._fileOperations.to_json(os.path.join(base_dir_path, name_preffix + 'statistical_summary.json'), statistical_summary)
+        self._fileOperations.to_json(os.path.join(base_dir_path, name_preffix + 'dci-statistical_summary.json'), statistical_summary)
 
         # save to a pdf
         try:
-            self._generate_pdf_report(statistical_summary, os.path.join(base_dir_path, name_preffix + 'report.pdf'))
+            self._generate_pdf_report(statistical_summary, os.path.join(base_dir_path, name_preffix + 'dci-report.pdf'))
         finally:
             plt.close()
 
