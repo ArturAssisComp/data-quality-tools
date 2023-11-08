@@ -234,7 +234,9 @@ class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
         total_inconsistencies = sum(k*v for k, v in distribution_by_row.items())
         max_inconsistencies_per_row = max(distribution_by_row)
         min_inconsistencies_per_row = min(distribution_by_row)
-        column_list = list(column_inconsistencies_count.keys())
+        snapshot =  self._snapshots[SnapshotType.COLUMN_INCONSISTENCY_COUNT_BY_TYPE_SNAPSHOT]
+        assert snapshot
+        column_list = snapshot.columns.copy()
         total_columns = len(column_list)
         total_cells = total_rows * total_columns
         total_inconsistencies_percentage = round(100 * total_inconsistencies / (total_cells), 2)
@@ -245,7 +247,7 @@ class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
             'max_inconsistencies_per_row':max_inconsistencies_per_row,
             'min_inconsistencies_per_row':min_inconsistencies_per_row,
             'total_columns':total_columns,
-            'columns_list':column_list,
+            #'columns_list':column_list,
             'total_inconsistencies_percentage':total_inconsistencies_percentage,
         }
 

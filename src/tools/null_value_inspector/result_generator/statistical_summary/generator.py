@@ -157,7 +157,9 @@ class StatisticalSummaryOverviewGenerator(BaseOverviewGenerator):
         total_nulls = sum(k*v for k, v in distribution_by_row.items())
         max_nulls_per_row = max(distribution_by_row)
         min_nulls_per_row = min(distribution_by_row)
-        column_list = list(column_null_count.keys())
+        snapshot =  self._snapshots[SnapshotType.COLUMN_NULL_COUNT_SNAPSHOT]
+        assert snapshot
+        column_list = snapshot.columns.copy()
         total_columns = len(column_list)
         total_cells = total_rows * total_columns
         total_nulls_percentage = round(100 * total_nulls / (total_cells), 2)
