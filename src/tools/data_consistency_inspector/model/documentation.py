@@ -7,7 +7,7 @@ from globals.types import ConsistencyCheckType, ReservedRuleName
 class RuleProcessor:
     @staticmethod
     def validate_rule(rule_str: str) -> bool:
-        if not re.match(r"^[0-9a-zA-Z_ <>=%&|()\[\]\{\},.-]+$", rule_str):
+        if not re.match(r"^.+$", rule_str):
             raise ValueError("Invalid characters in rule")
         return True
 
